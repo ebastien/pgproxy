@@ -1,10 +1,11 @@
 #!/usr/bin/env ruby
+$:.unshift File.dirname(__FILE__)
 
 require 'bindata'
 require 'celluloid/io'
-require './messages.rb'
+require 'pg_wire.rb'
 
-class EchoServer
+class PgServer
   include Celluloid::IO
   finalizer :finalize
 
@@ -28,17 +29,24 @@ class EchoServer
     raw
   end
 
+  def read_msg(fmt, socket)
+    msg = fmt.read socket
+    puts msg.inspect
+    msg
+  end
+
   def handle_connection(socket)
     _, port, host = socket.peeraddr
     puts "*** Received connection from #{host}:#{port}"
-    SSLRequest.read(socket)
-    BinData::String.new('N').write(socket)
-    msg = StartupMessage.read(socket)
-    puts msg.inspect
-    AuthenticationOk.new.write(socket)
-    ReadyForQuery.new.write(socket)
-    msg = Query.read(socket)
-    puts msg.inspect
+    msg = read_msg(PgWire::StartupMessage, socket)
+    raise EOFError, "Cancel" if msg.cancel?
+    if msg.ssl?
+      BinData::String.new('N').write(socket)
+      msg = read_msg(PgWire::StartupMessage, socket)
+    end
+    PgWire::AuthenticationOk.new.write(socket)
+    PgWire::ReadyForQuery.new.write(socket)
+    msg = read_msg(PgWire::Command, socket)
     loop { read_raw(socket) }
   rescue EOFError
     puts "*** #{host}:#{port} disconnected"
@@ -46,6 +54,6 @@ class EchoServer
   end
 end
 
-supervisor = EchoServer.supervise("127.0.0.1", 9876)
+supervisor = PgServer.supervise("0.0.0.0", 5432)
 trap("INT") { supervisor.terminate; exit }
 sleep
