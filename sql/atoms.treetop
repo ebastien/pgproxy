@@ -1,0 +1,19 @@
+module Sql
+  grammar Atoms
+    rule identifier
+      [a-z]+ {
+        def value
+          text_value
+        end
+      }  
+    end
+
+    rule required_space
+      ' '+
+    end
+
+    rule space
+      ' '*
+    end
+  end
+end

@@ -1,0 +1,121 @@
+require 'sql/atoms'
+
+module Sql
+  grammar Select
+    include Atoms
+
+    rule select_query
+      with_section space select_section {
+        def value
+          {
+            with: with_section.value,
+            select: select_section.value
+          }
+        end
+      }
+    end
+
+    rule with_section
+      with_kw required_space with_queries {
+        def value
+          with_queries.value
+        end
+      }
+      /
+      space {
+        def value
+          nil
+        end
+      }
+    end
+
+    rule with_kw
+      [wW] [iI] [tT] [hH]
+    end
+
+    rule with_queries
+      with_query space [,]+ space with_queries {
+        def value
+          with_query.value + with_queries.value
+        end
+      }
+      /
+      with_query
+    end
+
+    rule with_query
+      identifier required_space as_kw required_space '(' space select_query space ')' {
+        def value
+          [{
+            name: identifier.value,
+            query: select_query.value
+          }]
+        end
+      }
+    end
+
+    rule as_kw
+      [aA] [sS]
+    end
+
+    rule select_section
+      select_kw required_space select_list from_clause {
+        def value
+          select_list.value
+        end
+      }
+    end
+
+    rule select_kw
+      [sS] [eE] [lL] [eE] [cC] [tT]
+    end
+
+    rule select_list
+      column_expression space [,]+ space select_list {
+        def value
+          column_expression.value + select_list.value
+        end
+      }
+      /
+      column_expression
+    end
+
+    rule column_expression
+      [a-z]+ {
+        def value
+          [text_value]
+        end
+      }
+    end
+
+    rule from_clause
+      from_kw required_space table_expression sort_specification
+      /
+      space {
+        def value
+          nil
+        end
+      }
+    end
+
+    rule from_kw
+      [fF] [rR] [oO] [mM]
+    end
+
+    rule table_expression
+      space {
+        def value
+          nil
+        end
+      }
+    end
+
+    rule sort_specification
+      space {
+        def value
+          nil
+        end
+      }
+    end
+  end
+end

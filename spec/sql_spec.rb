@@ -1,13 +1,14 @@
-require File.expand_path("#{File.dirname(__FILE__)}/spec_helper")
+require "#{File.dirname(__FILE__)}/spec_helper"
 
-Treetop.load File.expand_path("#{File.dirname(__FILE__)}/../sql")
+require 'sql/select'
 
-describe SqlParser do
+describe Sql::SelectParser do
 
-  let(:p) { SqlParser.new }
+  let(:p) { Sql::SelectParser.new }
 
   it "works" do
     r = p.parse("with q as (select ax,bx,cx) select ax")
+    puts r.value if r
     expect(r).not_to be_nil
   end
 end
