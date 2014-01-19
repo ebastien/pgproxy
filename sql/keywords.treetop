@@ -1,0 +1,47 @@
+module Sql
+  grammar Keywords
+    rule with_kw
+      [wW] [iI] [tT] [hH]
+    end
+
+    rule as_kw
+      [aA] [sS]
+    end
+
+    rule select_kw
+      [sS] [eE] [lL] [eE] [cC] [tT]
+    end
+
+    rule from_kw
+      [fF] [rR] [oO] [mM]
+    end
+
+    rule join_kw
+      [jJ] [oO] [iI] [nN]
+    end
+
+    rule inner_kw
+      [iI] [nN] [nN] [eE] [rR]
+    end
+
+    rule outer_kw
+      [oO] [uU] [tT] [eE] [rR]
+    end
+
+    rule left_kw
+      [lL] [eE] [fF] [tT]
+    end
+
+    rule right_kw
+      [rR] [iI] [gG] [hH] [tT]
+    end
+
+    rule full_kw
+      [fF] [uU] [lL] [lL]
+    end
+
+    rule natural_kw
+      [nN] [aA] [tT] [uU] [rR] [aA] [lL]
+    end
+  end
+end

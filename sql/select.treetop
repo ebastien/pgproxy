@@ -1,16 +1,22 @@
 require 'sql/atoms'
+require 'sql/keywords'
 
 module Sql
   grammar Select
     include Atoms
+    include Keywords
 
     rule select_query
-      with_section space select_section {
+      space with_section space select_section space {
         def value
-          {
-            with: with_section.value,
-            select: select_section.value
-          }
+          { with: with_section.value,
+            select: select_section.value }
+        end
+      }
+      /
+      space select_section space {
+        def value
+          { select: select_section.value }
         end
       }
     end
@@ -21,16 +27,6 @@ module Sql
           with_queries.value
         end
       }
-      /
-      space {
-        def value
-          nil
-        end
-      }
-    end
-
-    rule with_kw
-      [wW] [iI] [tT] [hH]
     end
 
     rule with_queries
@@ -46,28 +42,24 @@ module Sql
     rule with_query
       identifier required_space as_kw required_space '(' space select_query space ')' {
         def value
-          [{
-            name: identifier.value,
-            query: select_query.value
-          }]
+          [[ identifier.value, select_query.value ]]
         end
       }
-    end
-
-    rule as_kw
-      [aA] [sS]
     end
 
     rule select_section
-      select_kw required_space select_list from_clause {
+      select_kw required_space select_list required_space from_clause {
         def value
-          select_list.value
+          { columns: select_list.value,
+            from: from_clause.value }
         end
       }
-    end
-
-    rule select_kw
-      [sS] [eE] [lL] [eE] [cC] [tT]
+      /
+      select_kw required_space select_list {
+        def value
+          { columns: select_list.value }
+        end
+      }
     end
 
     rule select_list
@@ -81,41 +73,110 @@ module Sql
     end
 
     rule column_expression
-      [a-z]+ {
+      id:identifier {
         def value
-          [text_value]
+          [id.value]
         end
       }
     end
 
     rule from_clause
-      from_kw required_space table_expression sort_specification
+      from_kw required_space table_references {
+        def value
+          { tables: table_references.value }
+        end
+      }
+    end
+
+    rule table_references
+      table_reference space [,]+ space table_references {
+        def value
+          table_reference.value + table_references.value
+        end
+      }
       /
-      space {
+      table_reference
+    end
+
+    rule table_reference
+      table_spec required_space (as_kw required_space)? table_name {
         def value
-          nil
+          [[ table_name.value, table_spec.value ]]
+        end
+      }
+      /
+      expr:table_spec {
+        def value
+          [[ '_', expr.value ]]
         end
       }
     end
 
-    rule from_kw
-      [fF] [rR] [oO] [mM]
+    rule table_spec
+      table_qualified_name
+      /
+      table_subquery
+      /
+      table_join
     end
 
-    rule table_expression
-      space {
+    rule table_qualified_name
+      database_name '.' table_name {
         def value
-          nil
+          [ database_name.value, table_name.value ]
+        end
+      }
+      /
+      t:table_name {
+        def value
+          [ "default", t.value ]
         end
       }
     end
 
-    rule sort_specification
-      space {
-        def value
-          nil
-        end
-      }
+    rule database_name
+      identifier { def value; text_value end }
+    end
+
+    rule table_name
+      identifier { def value; text_value end }
+    end
+
+    rule table_subquery
+      '(' space select_query space ')'
+    end
+
+    rule table_join
+      table_reference required_space join_type space join_kw
+      required_space table_reference required_space on_kw
+      required_space boolean_expression
+      /
+      table_reference required_space join_type space join_kw
+      required_space table_reference required_space using_kw
+      space '(' join_column_list ')'
+      /
+      table_reference required_space natural_kw required_space
+      join_type space join_kw required_space table_reference
+    end
+
+    rule boolean_expression
+      space
+    end
+
+    rule join_column_list
+      space
+    end
+
+    rule join_type
+      inner_join / outer_join (required_space outer_kw)?
+    end
+
+    rule inner_join
+      inner_kw
+    end
+
+    rule outer_join
+      left_kw / right_kw / full_kw
     end
   end
 end
