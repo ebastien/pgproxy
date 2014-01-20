@@ -13,18 +13,18 @@ module Sql
             select: select_section.value }
         end
       }
-      /
-      space select_section space {
-        def value
-          { select: select_section.value }
-        end
-      }
     end
 
     rule with_section
       with_kw required_space with_queries {
         def value
           with_queries.value
+        end
+      }
+      /
+      space {
+        def value
+          nil
         end
       }
     end
@@ -48,16 +48,10 @@ module Sql
     end
 
     rule select_section
-      select_kw required_space select_list required_space from_clause {
+      select_kw required_space select_list space table_expression {
         def value
           { columns: select_list.value,
-            from: from_clause.value }
-        end
-      }
-      /
-      select_kw required_space select_list {
-        def value
-          { columns: select_list.value }
+            table: table_expression.value }
         end
       }
     end
@@ -80,10 +74,48 @@ module Sql
       }
     end
 
+    rule table_expression
+      from_clause space where_clause space group_clause {
+        def value
+          { from: from_clause.value,
+            where: where_clause.value,
+            group: group_clause.value }
+        end
+      }
+    end
+
     rule from_clause
       from_kw required_space table_references {
         def value
           { tables: table_references.value }
+        end
+      }
+      /
+      space {
+        def value
+          nil
+        end
+      }
+    end
+
+    rule where_clause
+      where_kw required_space boolean_expression {
+        def value
+          boolean_expression.value
+        end
+      }
+      /
+      space {
+        def value
+          nil
+        end
+      }
+    end
+
+    rule group_clause
+      space {
+        def value
+          nil
         end
       }
     end
@@ -107,7 +139,7 @@ module Sql
       /
       expr:table_spec {
         def value
-          [[ '_', expr.value ]]
+          [[ nil, expr.value ]]
         end
       }
     end
@@ -129,7 +161,7 @@ module Sql
       /
       t:table_name {
         def value
-          [ "default", t.value ]
+          [ nil, t.value ]
         end
       }
     end
@@ -160,7 +192,61 @@ module Sql
     end
 
     rule boolean_expression
-      space
+      value_expression
+    end
+
+    rule value_expression
+      binary_expression / unary_expression
+    end
+
+    rule binary_expression
+      l:unary_expression space value_operator space r:unary_expression {
+        def value
+          [value_operator.value, l.value, r.value]
+        end
+      }
+    end
+
+    rule unary_expression
+      '(' space value_expression space ')'
+      /
+      literal_value
+      /
+      column_reference  
+    end
+
+    rule literal_value
+      [0-9]+ {
+        def value
+          text_value.to_i
+        end
+      }
+    end
+
+    rule column_reference
+      table_qualified_name '.' column_name {
+        def value
+          [ table_qualified_name.value, column_name.value ]
+        end
+      }
+      /
+      c:column_name {
+        def value
+          [ nil, c.value ]
+        end
+      }
+    end
+
+    rule column_name
+      identifier
+    end
+
+    rule value_operator
+      ('=' / not_kw / and_kw / or_kw) {
+        def value
+          text_value.to_sym
+        end
+      }
     end
 
     rule join_column_list

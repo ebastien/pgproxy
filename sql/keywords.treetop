@@ -1,47 +1,73 @@
 module Sql
   grammar Keywords
+    rule keyword
+      with_kw / as_kw / select_kw / from_kw / join_kw / inner_kw / outer_kw /
+      left_kw / right_kw / full_kw / natural_kw / where_kw / not_kw / and_kw /
+      or_kw
+    end
+
+    rule kw_sep
+      !(!' ' .)
+    end
+
     rule with_kw
-      [wW] [iI] [tT] [hH]
+      [wW] [iI] [tT] [hH] kw_sep
     end
 
     rule as_kw
-      [aA] [sS]
+      [aA] [sS] kw_sep
     end
 
     rule select_kw
-      [sS] [eE] [lL] [eE] [cC] [tT]
+      [sS] [eE] [lL] [eE] [cC] [tT] kw_sep
     end
 
     rule from_kw
-      [fF] [rR] [oO] [mM]
+      [fF] [rR] [oO] [mM] kw_sep
     end
 
     rule join_kw
-      [jJ] [oO] [iI] [nN]
+      [jJ] [oO] [iI] [nN] kw_sep
     end
 
     rule inner_kw
-      [iI] [nN] [nN] [eE] [rR]
+      [iI] [nN] [nN] [eE] [rR] kw_sep
     end
 
     rule outer_kw
-      [oO] [uU] [tT] [eE] [rR]
+      [oO] [uU] [tT] [eE] [rR] kw_sep
     end
 
     rule left_kw
-      [lL] [eE] [fF] [tT]
+      [lL] [eE] [fF] [tT] kw_sep
     end
 
     rule right_kw
-      [rR] [iI] [gG] [hH] [tT]
+      [rR] [iI] [gG] [hH] [tT] kw_sep
     end
 
     rule full_kw
-      [fF] [uU] [lL] [lL]
+      [fF] [uU] [lL] [lL] kw_sep
     end
 
     rule natural_kw
-      [nN] [aA] [tT] [uU] [rR] [aA] [lL]
+      [nN] [aA] [tT] [uU] [rR] [aA] [lL] kw_sep
+    end
+
+    rule where_kw
+      [wW] [hH] [eE] [rR] [eE] kw_sep
+    end
+
+    rule not_kw
+      [nN] [oO] [tT] kw_sep
+    end
+
+    rule and_kw
+      [aA] [nN] [dD] kw_sep
+    end
+
+    rule or_kw
+      [oO] [rR] kw_sep
     end
   end
 end

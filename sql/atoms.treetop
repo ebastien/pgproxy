@@ -1,7 +1,11 @@
+require 'sql/keywords'
+
 module Sql
   grammar Atoms
+    include Keywords
+
     rule identifier
-      [a-zA-Z_] [a-zA-Z0-9_]* {
+      !keyword [a-zA-Z_] [a-zA-Z0-9_]* {
         def value
           text_value
         end
