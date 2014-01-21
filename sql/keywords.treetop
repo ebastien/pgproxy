@@ -3,7 +3,7 @@ module Sql
     rule keyword
       with_kw / as_kw / select_kw / from_kw / join_kw / inner_kw / outer_kw /
       left_kw / right_kw / full_kw / natural_kw / where_kw / not_kw / and_kw /
-      or_kw
+      or_kw / true_kw / false_kw
     end
 
     rule kw_sep
@@ -68,6 +68,14 @@ module Sql
 
     rule or_kw
       [oO] [rR] kw_sep
+    end
+
+    rule true_kw
+      [tT] [rR] [uU] [eE] kw_sep
+    end
+
+    rule false_kw
+      [fF] [aA] [lL] [sS] [eE] kw_sep
     end
   end
 end

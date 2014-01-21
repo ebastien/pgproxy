@@ -19,7 +19,7 @@ describe Sql::SelectParser do
   end
 
   it "parses select with from and where clauses" do
-    parse("select a from t where a = 1").should_not be_nil
+    parse("select a from t where b + 1 = a and a > 2").should_not be_nil
   end
 
   it "works" do

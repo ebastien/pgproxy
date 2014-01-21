@@ -1,10 +1,12 @@
 require 'sql/atoms'
 require 'sql/keywords'
+require 'sql/expression'
 
 module Sql
   grammar Select
     include Atoms
     include Keywords
+    include Expression
 
     rule select_query
       space with_section space select_section space {
@@ -189,64 +191,6 @@ module Sql
       /
       table_reference required_space natural_kw required_space
       join_type space join_kw required_space table_reference
-    end
-
-    rule boolean_expression
-      value_expression
-    end
-
-    rule value_expression
-      binary_expression / unary_expression
-    end
-
-    rule binary_expression
-      l:unary_expression space value_operator space r:unary_expression {
-        def value
-          [value_operator.value, l.value, r.value]
-        end
-      }
-    end
-
-    rule unary_expression
-      '(' space value_expression space ')'
-      /
-      literal_value
-      /
-      column_reference  
-    end
-
-    rule literal_value
-      [0-9]+ {
-        def value
-          text_value.to_i
-        end
-      }
-    end
-
-    rule column_reference
-      table_qualified_name '.' column_name {
-        def value
-          [ table_qualified_name.value, column_name.value ]
-        end
-      }
-      /
-      c:column_name {
-        def value
-          [ nil, c.value ]
-        end
-      }
-    end
-
-    rule column_name
-      identifier
-    end
-
-    rule value_operator
-      ('=' / not_kw / and_kw / or_kw) {
-        def value
-          text_value.to_sym
-        end
-      }
     end
 
     rule join_column_list

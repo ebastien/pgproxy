@@ -1,0 +1,125 @@
+require 'sql/atoms'
+require 'sql/keywords'
+
+module Sql
+  grammar Expression
+    include Atoms
+    include Keywords
+
+    rule boolean_expression
+      disjonction_expression
+    end
+
+    rule conjonction_expression
+      boolean_value space and_kw space conjonction_expression {
+        def value
+          [:and, boolean_value.value, conjonction_expression.value]
+        end
+      }
+      /
+      boolean_value
+    end
+
+    rule disjonction_expression
+      conjonction_expression space or_kw space disjonction_expression {
+        def value
+          [:or, conjonction_expression.value, disjonction_expression.value]
+        end
+      }
+      /
+      conjonction_expression
+    end
+
+    rule boolean_value
+      true_kw { def value; true end }
+      /
+      false_kw { def value; false end }
+      /
+      '(' space boolean_expression space ')' {
+        def value
+          boolean_expression.value
+        end
+      }
+      /
+      predicate_expression
+    end
+
+    rule predicate_expression
+      l:numeric_expression space predicate_operator space r:numeric_expression {
+        def value
+          [predicate_operator.value, l.value, r.value]
+        end
+      }
+    end
+
+    rule predicate_operator
+      ('<' / '>' / '=') {
+        def value
+          text_value.to_sym
+        end
+      }
+    end
+
+    rule numeric_expression
+      sum_expression
+    end
+
+    rule sum_expression
+      product_expression space '+' space sum_expression {
+        def value
+          [:sum, product_expression.value, sum_expression.value]
+        end
+      }
+      /
+      product_expression
+    end
+
+    rule product_expression
+      numeric_value space '*' space product_expression {
+        def value
+          [:product, numeric_value.value, product_expression.value]
+        end
+      }
+      /
+      numeric_value
+    end
+
+    rule numeric_value
+      literal_value
+      /
+      column_reference
+      /
+      '(' space numeric_expression space ')' {
+        def value
+          numeric_expression.value
+        end
+      }
+    end
+
+    rule literal_value
+      [0-9]+ {
+        def value
+          [:integer, text_value.to_i]
+        end
+      }
+    end
+
+    rule column_reference
+      table_qualified_name '.' column_name {
+        def value
+          [:column, table_qualified_name.value, column_name.value]
+        end
+      }
+      /
+      c:column_name {
+        def value
+          [:column, c.value ]
+        end
+      }
+    end
+
+    rule column_name
+      identifier
+    end
+  end
+end
