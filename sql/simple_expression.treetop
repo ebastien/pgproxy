@@ -1,0 +1,77 @@
+require 'sql/atoms'
+require 'sql/keywords'
+
+module Sql
+  grammar Expression
+    include Atoms
+    include Keywords
+
+    rule boolean_expression
+      gen_expression
+    end
+
+    rule gen_expression
+      gen_value r:( space gen_operator space gen_value )* {
+        def value
+          [gen_value.value] + r.elements.flat_map do |e|
+            [e.gen_operator.name, e.gen_value.value]
+          end
+        end
+      }
+    end
+
+    rule gen_operator
+      ('*' / '+' / '=' / '<' / '>' / and_kw / or_kw) {
+        def name
+          text_value.to_sym
+        end
+      }
+    end
+
+    rule gen_value
+      '(' space gen_expression space ')' {
+        def value
+          gen_expression.value
+        end
+      }
+      /
+      numeric_literal
+      /
+      boolean_literal
+      /
+      column_reference
+    end
+
+    rule numeric_literal
+      [0-9]+ {
+        def value
+          [:integer, text_value.to_i]
+        end
+      }
+    end
+
+    rule boolean_literal
+      true_kw { def value; true end }
+      /
+      false_kw { def value; false end }
+    end
+
+    rule column_reference
+      table_qualified_name '.' column_name {
+        def value
+          [:column, table_qualified_name.value, column_name.value]
+        end
+      }
+      /
+      c:column_name {
+        def value
+          [:column, c.value ]
+        end
+      }
+    end
+
+    rule column_name
+      identifier
+    end
+  end
+end
