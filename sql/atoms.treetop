@@ -6,7 +6,7 @@ module Sql
 
     rule identifier
       !keyword [a-zA-Z_] [a-zA-Z0-9_]* {
-        def value
+        def name
           text_value
         end
       }  
