@@ -120,92 +120,93 @@ module Sql
     end
 
     rule table_references
-      table_reference r:( space ',' space table_reference )* {
+      table_joins r:( space ',' space table_joins )* {
         def tables
-          [ table_reference.table ] + r.elements.map { |e| e.table_reference.table }
+          table_joins.tables + r.elements.flat_map { |e| e.table_joins.tables }
         end
       }
     end
 
-    rule table_reference
-      table_spec required_space (as_kw required_space)? table_name {
+    rule table_joins
+      table_alias r:( space joined_table )* {
+        def tables
+          [table_alias.table] + r.elements.map { |e| e.joined_table.table }
+        end
+      }
+    end
+
+    rule table_alias
+      table_spec space (as_kw space)? table_name space column_list? {
         def table
-          [ table_name.name, table_spec.spec ]
+          [ table_name.name, table_spec.tables ]
         end
       }
       /
       table_spec {
         def table
-          [ nil, spec ]
+          [ nil, tables ]
         end
       }
     end
 
     rule table_spec
-      '(' space select_query space ')' { def spec; :subquery end }
-      /
-      table_qualified_name !join_assertion {
-        def spec
-          table_qualified_name.name 
+      '(' space select_query space ')' {
+        def tables
+          select_query.tables
         end
       }
       /
-      table_join { def spec; :join end }
-    end
-
-    rule join_assertion
-      space (natural_kw / join_type)
-    end
-
-    rule table_qualified_name
-      database_name '.' table_name {
-        def name
-          [ database_name.name, table_name.name ]
+      '(' space table_joins space ')' {
+        def tables
+          table_joins.tables
         end
       }
       /
-      t:table_name {
-        def name
-          [ nil, t.name ]
+      table_qualified_name {
+        def tables
+          [name]
         end
       }
     end
 
-    rule database_name
-      identifier
+    rule joined_table
+      natural_join / predicate_join / columns_join
     end
 
-    rule table_name
-      identifier
+    rule natural_join
+      natural_kw space join_type space join_kw space table_alias {
+        def table
+          table_alias.table
+        end
+      }
     end
 
-    rule table_join
-      table_reference required_space join_type space join_kw
-      required_space table_reference required_space on_kw
-      required_space boolean_expression
-      /
-      table_reference required_space join_type space join_kw
-      required_space table_reference required_space using_kw
-      space '(' join_column_list ')'
-      /
-      table_reference required_space natural_kw required_space
-      join_type space join_kw required_space table_reference
+    rule predicate_join
+      join_type space join_kw space table_alias space on_kw space boolean_expression {
+        def table
+          table_alias.table
+        end
+      }
     end
 
-    rule join_column_list
-      space
+    rule columns_join
+      join_type space join_kw space table_alias space using_kw space column_list {
+        def table
+          table_alias.table
+        end
+      }
     end
 
     rule join_type
-      inner_join / outer_join (required_space outer_kw)?
-    end
-
-    rule inner_join
+      (left_kw / right_kw / full_kw) (space outer_kw)?
+      /
       inner_kw
+      /
+      space
     end
 
-    rule outer_join
-      left_kw / right_kw / full_kw
+    rule column_list
+      '(' column_name r:( space ',' space column_name)* ')'
     end
   end
 end

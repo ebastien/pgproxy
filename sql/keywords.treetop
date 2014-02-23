@@ -2,8 +2,8 @@ module Sql
   grammar Keywords
     rule keyword
       with_kw / as_kw / select_kw / from_kw / join_kw / inner_kw / outer_kw /
-      left_kw / right_kw / full_kw / natural_kw / where_kw / not_kw / and_kw /
-      or_kw / true_kw / false_kw
+      left_kw / right_kw / full_kw / natural_kw / on_kw / using_kw /
+      where_kw / not_kw / and_kw / or_kw / true_kw / false_kw
     end
 
     rule kw_sep
@@ -52,6 +52,14 @@ module Sql
 
     rule natural_kw
       [nN] [aA] [tT] [uU] [rR] [aA] [lL] kw_sep
+    end
+
+    rule on_kw
+      [oO] [nN] kw_sep
+    end
+
+    rule using_kw
+      [uU] [sS] [iI] [nN] [gG] kw_sep
     end
 
     rule where_kw

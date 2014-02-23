@@ -39,7 +39,7 @@ module Sql
       /
       boolean_literal
       /
-      column_reference
+      column_qualified_name
     end
 
     rule numeric_literal
@@ -54,24 +54,6 @@ module Sql
       true_kw { def value; true end }
       /
       false_kw { def value; false end }
-    end
-
-    rule column_reference
-      table_qualified_name '.' column_name {
-        def value
-          [:column, table_qualified_name.value, column_name.value]
-        end
-      }
-      /
-      c:column_name {
-        def value
-          [:column, c.value ]
-        end
-      }
-    end
-
-    rule column_name
-      identifier
     end
   end
 end

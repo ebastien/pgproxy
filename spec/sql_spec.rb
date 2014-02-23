@@ -29,18 +29,38 @@ describe Sql::SelectParser do
   end
 
   it "parses select with subquery" do
-    parse("select a from t, (select b,c from d.t)").should_not be_nil
+    parse("select a from t1, (select b,c from d.t) t2").should_not be_nil
   end
 
-  it "parses select with join" do
+  it "parses select with natural join" do
+    parse("select a,b from t1 natural inner join t2").should_not be_nil
+  end
+
+  it "parses select with inner join" do
     parse("select a,b from t1 inner join t2 on (t1.a = t2.a)").should_not be_nil
   end
 
-  it "works" do
-    parse("""
-with q as (
-  select ax, bx, cx from my_table as t
-) select ax from q
-""").should_not be_nil
+  it "parses select with outer join" do
+    parse("select a,b from t1 full outer join t2 using (a,b)").should_not be_nil
+  end
+
+  it "parses select with multiple joins" do
+    parse("select a,b from t1 join t2 using (a) right join t3 on (t2.b = t3.c)").should_not be_nil
+  end
+
+  it "parses select with alias on tables" do
+    parse("select a,b from t1 as x natural join t2 as y").should_not be_nil
+  end
+
+  it "parses select with alias on join" do
+    parse("select a,b from (t1 natural join t2) as t3").should_not be_nil
+  end
+
+  it "parses select with column alias" do
+    parse("select a,b,c from long_table t (a,b,c)").should_not be_nil
+  end
+
+  it "parses select with common table expression" do
+    parse("with q as (select a,b from t1) select a,b,c from q natural join t2").should_not be_nil
   end
 end
