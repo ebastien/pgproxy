@@ -17,50 +17,96 @@ describe Sql::SelectParser do
   end
 
   it "parses select with from clause" do
-    parse("select a from t").should_not be_nil
+    t = parse("select a from t")
+    t.should_not be_nil
+    t.tables.should eq(["t"])
   end
 
   it "parses select with two tables" do
-    parse("select a from t1, t2").should_not be_nil
+    t = parse("select a from t1, t2")
+    t.should_not be_nil
+    t.tables.should eq(["t1","t2"])
   end
 
   it "parses select with from and where clauses" do
-    parse("select a from t where b + 1 = a and a > 2").should_not be_nil
+    t = parse("select a from t where b + 1 = a and a > 2")
+    t.should_not be_nil
+    t.tables.should eq(["t"])
   end
 
   it "parses select with subquery" do
-    parse("select a from t1, (select b,c from d.t) t2").should_not be_nil
+    t = parse("select a from t1, (select b,c from d.t) t2")
+    t.should_not be_nil
+    t.tables.should eq(["d/t","t1"])
+  end
+
+  it "reject select with subquery without alias" do
+    t = parse("select a from t1, (select b,c from d.t)")
+    t.should be_nil
   end
 
   it "parses select with natural join" do
-    parse("select a,b from t1 natural inner join t2").should_not be_nil
+    t = parse("select a,b from t1 natural inner join t2")
+    t.should_not be_nil
+    t.tables.should eq(["t1","t2"])
   end
 
   it "parses select with inner join" do
-    parse("select a,b from t1 inner join t2 on (t1.a = t2.a)").should_not be_nil
+    t = parse("select a,b from t1 inner join t2 on (t1.a = t2.a)")
+    t.should_not be_nil
+    t.tables.should eq(["t1","t2"])
   end
 
   it "parses select with outer join" do
-    parse("select a,b from t1 full outer join t2 using (a,b)").should_not be_nil
+    t = parse("select a,b from t1 full outer join t2 using (a,b)")
+    t.should_not be_nil
+    t.tables.should eq(["t1","t2"])
   end
 
   it "parses select with multiple joins" do
-    parse("select a,b from t1 join t2 using (a) right join t3 on (t2.b = t3.c)").should_not be_nil
+    t = parse("select a,b from t1 join t2 using (a) right join t3 on (t2.b = t3.c)")
+    t.should_not be_nil
+    t.tables.should eq(["t1","t2","t3"])
   end
 
   it "parses select with alias on tables" do
-    parse("select a,b from t1 as x natural join t2 as y").should_not be_nil
+    t = parse("select a,b from t1 as x natural join t2 as y")
+    t.should_not be_nil
+    t.tables.should eq(["t1","t2"])
   end
 
   it "parses select with alias on join" do
-    parse("select a,b from (t1 natural join t2) as t3").should_not be_nil
+    t = parse("select a,b from (t1 natural join t2) as t3")
+    t.should_not be_nil
+    t.tables.should eq(["t1","t2"])
+  end
+
+  it "reject select with sub-join without alias" do
+    t = parse("select a,b from (t1 natural join t2)")
+    t.should be_nil
   end
 
   it "parses select with column alias" do
-    parse("select a,b,c from long_table t (a,b,c)").should_not be_nil
+    t = parse("select a,b,c from long_table t (a,b,c)")
+    t.should_not be_nil
+    t.tables.should eq(["long_table"])
   end
 
   it "parses select with common table expression" do
-    parse("with q as (select a,b from t1) select a,b,c from q natural join t2").should_not be_nil
+    t = parse("with q as (select a,b from t1) select a,b,c from q natural join t2")
+    t.should_not be_nil
+    t.tables.should eq(["t1","t2"])
+  end
+
+  it "parses select with common table expression and join" do
+    t = parse("with q as (select a,b from t1 natural join t2) select c from q natural join t3")
+    t.should_not be_nil
+    t.tables.should eq(["t1","t2","t3"])
+  end
+
+  it "parses select with common table expression and repeated table" do
+    t = parse("with q as (select a,b from t1 natural join t2) select c from q natural join t2")
+    t.should_not be_nil
+    t.tables.should eq(["t1","t2"])
   end
 end

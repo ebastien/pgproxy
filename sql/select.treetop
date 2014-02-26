@@ -11,13 +11,20 @@ module Sql
     rule select_query
       space with_section space select_section space {
         def subqueries
-          with_section.tables
+          Hash[ with_section.tables.map { |t| [t.first, expand_table(t)] } ]
         end
         def columns
           select_section.columns
         end
         def tables
-          select_section.tables
+          cte = subqueries
+          select_section.tables.flat_map { |t| expand_table(t) }
+                               .flat_map { |t| cte[t] || [t] }
+                               .sort.uniq
+        end
+        def expand_table(t)
+          a, b = t
+          b.is_a?(Array) ? b.flat_map { |x| expand_table(x) } : [a]
         end
         def to_s
           "#{subqueries} | #{columns} | #{tables}"
@@ -142,9 +149,9 @@ module Sql
         end
       }
       /
-      table_spec {
+      table_qualified_name {
         def table
-          [ nil, tables ]
+          [ name, [name] ]
         end
       }
     end

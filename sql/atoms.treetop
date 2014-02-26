@@ -23,29 +23,21 @@ module Sql
     rule table_qualified_name
       database_name '.' table_name {
         def name
-          [ database_name.name, table_name.name ]
+          [ database_name.name, table_name.name ].join '/'
         end
       }
       /
-      t:table_name {
-        def name
-          [ nil, t.name ]
-        end
-      }
+      table_name
     end
 
     rule column_qualified_name
       table_name '.' column_name {
         def name
-          [ table_name.name, column_name.name ]
+          [ table_name.name, column_name.name ].join ':'
         end
       }
       /
-      c:column_name {
-        def name
-          [ nil, c.name ]
-        end
-      }
+      column_name
     end
 
     rule database_name
