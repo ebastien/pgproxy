@@ -39,13 +39,17 @@ module Sql
       /
       boolean_literal
       /
-      column_qualified_name
+      column_qualified_name {
+        def value
+          name
+        end
+      }
     end
 
     rule numeric_literal
       [0-9]+ {
         def value
-          [:integer, text_value.to_i]
+          text_value.to_i
         end
       }
     end
