@@ -1,0 +1,99 @@
+module Sql
+  grammar String
+    include Atoms
+
+    rule multi_string
+      single_string t:( ' '* "\n" ' '* single_string )* {
+        def value
+          ([single_string.value] + t.elements.map { |e| e.single_string.value }).join
+        end
+      }
+    end
+
+    rule single_string
+      std_string_constant / ext_string_constant
+    end
+
+    rule std_string_constant
+      "'" c:( std_character )* "'" {
+        def value
+          c.elements.map(&:value).join
+        end
+      }
+    end
+
+    rule std_character
+      "''" {
+        def value
+          "'"
+        end
+      }
+      /
+      [^'] {
+        def value
+          text_value
+        end
+      }
+    end
+
+    rule ext_string_constant
+      [eE] "'" c:( ext_character )* "'" {
+        def value
+          c.elements.map(&:value).join
+        end
+      }
+    end
+
+    rule ext_character
+      "''" {
+        def value
+          "'"
+        end
+      }
+      /
+      "\\" ext_string_escape {
+        def value
+          ext_string_escape.value
+        end
+      }
+      /
+      [^\\'] {
+        def value
+          text_value
+        end
+      }
+    end
+
+    rule ext_string_escape
+      [bfnrt] {
+        def value
+          ""
+        end
+      }
+      /
+      [0-7] 1..3 {
+        def value
+          ""
+        end
+      }
+      /
+      'x' [0-9A-F] 1..2 {
+        def value
+          ""
+        end
+      }
+      /
+      [uU] ([0-9A-F] 8..8 / [0-9A-F] 4..4) {
+        def value
+          ""
+        end
+      }
+      /
+      [^xuU] {
+        def value
+          text_value
+        end
+      }
+    end
+  end
+end

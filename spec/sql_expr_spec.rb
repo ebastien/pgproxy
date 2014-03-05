@@ -25,6 +25,12 @@ describe Sql::ExpressionParser do
     e.value.should eq([42])
   end
 
+  it "parses a literal boolean" do
+    e = parse("true")
+    e.should_not be_nil
+    e.value.should eq([true])
+  end
+
   it "parses a literal string" do
     e = parse("'42'")
     e.should_not be_nil

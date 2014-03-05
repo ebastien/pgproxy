@@ -1,10 +1,12 @@
 require 'sql/atoms'
 require 'sql/keywords'
+require 'sql/string'
 
 module Sql
   grammar Expression
     include Atoms
     include Keywords
+    include String
 
     rule boolean_expression
       gen_expression
@@ -34,6 +36,8 @@ module Sql
           gen_expression.value
         end
       }
+      /
+      multi_string
       /
       numeric_literal
       /
