@@ -11,7 +11,7 @@ describe Sql::SelectParser do
   end
 
   it "parses select without from clause" do
-    t = parse("select a")
+    t = parse("select 42")
     t.should_not be_nil
     t.tables.should be_empty
   end

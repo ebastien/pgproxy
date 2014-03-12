@@ -1,12 +1,16 @@
-require 'sql/atoms'
+require 'sql/identifier'
 require 'sql/keywords'
 require 'sql/string'
 
 module Sql
   grammar Expression
-    include Atoms
+    include Identifier
     include Keywords
     include String
+
+    rule scalar_expression
+      gen_expression
+    end
 
     rule boolean_expression
       gen_expression

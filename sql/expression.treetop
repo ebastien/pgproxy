@@ -1,9 +1,9 @@
-require 'sql/atoms'
+require 'sql/identifier'
 require 'sql/keywords'
 
 module Sql
   grammar Expression
-    include Atoms
+    include Identifier
     include Keywords
 
     rule boolean_expression

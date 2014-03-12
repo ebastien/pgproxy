@@ -1,6 +1,8 @@
+require 'sql/identifier'
+
 module Sql
   grammar String
-    include Atoms
+    include Identifier
 
     rule multi_string
       single_string t:( ' '* "\n" ' '* single_string )* {

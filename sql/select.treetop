@@ -1,10 +1,10 @@
-require 'sql/atoms'
+require 'sql/identifier'
 require 'sql/keywords'
 require 'sql/simple_expression'
 
 module Sql
   grammar Select
-    include Atoms
+    include Identifier
     include Keywords
     include Expression
 
@@ -74,17 +74,13 @@ module Sql
     end
 
     rule select_list
-      column_expression r:( space ',' space column_expression)* {
+      scalar_expression r:( space ',' space scalar_expression)* {
         def columns
-          [column_expression.value] + r.elements.map do |e|
-            e.column_expression.value
+          [scalar_expression.value] + r.elements.map do |e|
+            e.scalar_expression.value
           end
         end
       }
-    end
-
-    rule column_expression
-      identifier { def value; name end }
     end
 
     rule table_expression

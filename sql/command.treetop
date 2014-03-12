@@ -1,0 +1,15 @@
+require 'sql/select'
+
+module Sql
+  grammar Command
+    include Select
+
+    rule commands
+      command r:( space ';' space command )*
+    end
+
+    rule command
+      select_query / space
+    end
+  end
+end
