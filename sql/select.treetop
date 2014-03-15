@@ -1,9 +1,11 @@
+require 'sql/space'
 require 'sql/identifier'
 require 'sql/keywords'
 require 'sql/simple_expression'
 
 module Sql
   grammar Select
+    include Space
     include Identifier
     include Keywords
     include Expression

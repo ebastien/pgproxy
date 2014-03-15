@@ -1,20 +1,14 @@
+require 'sql/space'
 require 'sql/identifier'
 require 'sql/keywords'
 require 'sql/string'
 
 module Sql
   grammar Expression
+    include Space
     include Identifier
     include Keywords
     include String
-
-    rule scalar_expression
-      gen_expression
-    end
-
-    rule boolean_expression
-      gen_expression
-    end
 
     rule gen_expression
       gen_value r:( space gen_operator space gen_value )* {
@@ -26,8 +20,20 @@ module Sql
       }
     end
 
+    rule scalar_expression
+      gen_expression
+    end
+
+    rule boolean_expression
+      gen_expression
+    end
+
     rule gen_operator
-      ('*' / '+' / '=' / '<' / '>' / and_kw / or_kw) {
+      ( '*' / '/' / '+' / '-'
+      / '=' / '<' / '>'
+      / '~' / '!' / '@' / '#' / '%'
+      / '^' / '&' / '|' / '?'
+      / and_kw / or_kw ) {
         def name
           text_value.to_sym
         end
@@ -55,11 +61,33 @@ module Sql
     end
 
     rule numeric_literal
-      [0-9]+ {
+      decimal_literal numeric_exponent {
         def value
-          text_value.to_i
+          decimal_literal.value * (10 ** numeric_exponent.value)
         end
       }
+      /
+      decimal_literal
+    end
+
+    rule decimal_literal
+      ( digits ( '.' digits? )? / '.' digits ) {
+        def value
+          text_value.to_f
+        end
+      }
+    end
+
+    rule numeric_exponent
+      'e' s:( '+' / '-' )? digits {
+        def value
+          digits.value * ( s.text_value == '-' ? -1 : 1 )
+        end
+      }
+    end
+
+    rule digits
+      [0-9]+ { def value; text_value.to_i end }
     end
 
     rule boolean_literal

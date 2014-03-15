@@ -1,0 +1,19 @@
+require 'sql/comment'
+
+module Sql
+  grammar Space
+    include Comment
+
+    rule required_space
+      spacing+
+    end
+
+    rule space
+      spacing*
+    end
+
+    rule spacing
+      [ \n] / comment
+    end
+  end
+end

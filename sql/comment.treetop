@@ -1,0 +1,15 @@
+module Sql
+  grammar Comment
+    rule comment
+      c_comment / line_comment
+    end
+
+    rule line_comment
+      '--' [^\n]* "\n"
+    end
+
+    rule c_comment
+      '/*' ( !'*/' (c_comment / . / "\n") )* '*/'
+    end
+  end
+end

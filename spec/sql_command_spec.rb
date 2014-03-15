@@ -16,4 +16,9 @@ describe Sql::CommandParser do
     t = parse("select a; select b")
     expect(t).not_to be_nil
   end
+
+  it "parses queries with comment" do
+    t = parse("select /* comment */ a; select b")
+    expect(t).not_to be_nil
+  end
 end

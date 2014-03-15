@@ -5,6 +5,10 @@ module Sql
     include Keywords
 
     rule identifier
+      literal_identifier / quoted_identifier
+    end
+
+    rule literal_identifier
       !keyword [\p{Alpha}_] [\p{Alnum}_$]* {
         def name
           text_value
@@ -12,12 +16,18 @@ module Sql
       }
     end
 
-    rule required_space
-      [ \n]+
+    rule quoted_identifier
+      '"' c:( identifier_char )* '"' {
+        def name
+          c.elements.map(&:character).join
+        end
+      }
     end
 
-    rule space
-      [ \n]*
+    rule identifier_char
+      '""' { def character; '"' end }
+      /
+      [^"] { def character; text_value end }
     end
 
     rule table_qualified_name

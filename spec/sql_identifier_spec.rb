@@ -18,4 +18,15 @@ describe Sql::IdentifierParser do
     t = parse("my_invalid-IdenTifieR")
     expect(t).to be_nil
   end
+
+  it "rejects keyword as identifier" do
+    t = parse("select")
+    expect(t).to be_nil
+  end
+
+  it "parses quoted identifier" do
+    t = parse("\"select\"")
+    expect(t).not_to be_nil
+    expect(t.name).to eq("select")
+  end
 end
