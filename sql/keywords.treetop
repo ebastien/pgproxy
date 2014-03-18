@@ -3,7 +3,9 @@ module Sql
     rule keyword
       with_kw / as_kw / select_kw / from_kw / join_kw / inner_kw / outer_kw /
       left_kw / right_kw / full_kw / natural_kw / on_kw / using_kw /
-      where_kw / not_kw / and_kw / or_kw / true_kw / false_kw
+      where_kw / not_kw / and_kw / or_kw / true_kw / false_kw /
+      is_kw / isnull_kw / notnull_kw / in_kw / between_kw / overlaps_kw /
+      like_kw / ilike_kw / similar_kw / null_kw
     end
 
     rule kw_sep
@@ -84,6 +86,46 @@ module Sql
 
     rule false_kw
       [fF] [aA] [lL] [sS] [eE] kw_sep
+    end
+
+    rule is_kw
+      [iI] [sS] kw_sep
+    end
+
+    rule isnull_kw
+      [iI] [sS] [nN] [uU] [lL] [lL] kw_sep
+    end
+
+    rule notnull_kw
+      [nN] [oO] [tT] [nN] [uU] [lL] [lL] kw_sep
+    end
+
+    rule in_kw
+      [iI] [nN] kw_sep
+    end
+
+    rule between_kw
+      [bB] [eE] [tT] [wW] [eE] [eE] [nN] kw_sep
+    end
+
+    rule overlaps_kw
+      [oO] [vV] [eE] [rR] [lL] [aA] [pP] [sS] kw_sep
+    end
+
+    rule like_kw
+      [lL] [iI] [kK] [eE] kw_sep
+    end
+
+    rule ilike_kw
+      [iI] [lL] [iI] [kK] [eE] kw_sep
+    end
+
+    rule similar_kw
+      [sS] [iI] [mM] [iI] [lL] [aA] [rR] kw_sep
+    end
+
+    rule null_kw
+      [nN] [uU] [lL] [lL] kw_sep
     end
   end
 end

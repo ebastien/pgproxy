@@ -16,7 +16,7 @@ describe Sql::ExpressionParser do
 
   it "parses a qualified column name" do
     e = parse("my_table.my_column")
-    e.value.should eq(["my_table:my_column"])
+    e.value.should eq([[:f, "my_table", "my_column"]])
   end
 
   it "parses an integer" do
@@ -40,17 +40,30 @@ describe Sql::ExpressionParser do
 
   it "parses a float" do
     expect(parse("42.56").value).to eq([42.56])
-  end
-
-  it "parses a float w/o unit" do
     expect(parse(".56").value).to eq([0.56])
   end
 
   it "parses an exponent notation" do
     expect(parse("42.56e-3").value).to eq([0.04256])
+    expect(parse("42.e3").value).to eq([42000])
   end
 
-  it "parses an unusual exponent notation" do
-    expect(parse("42.e3").value).to eq([42000])
+  it "parses arithmetic" do
+    parse("-42 * (3.5 - 9 / t.b) + t.a")
+  end
+
+  it "parses positional parameters" do
+    parse("$1 + $2")
+  end
+
+  it "parses a subscript expression" do
+    parse("table.column[42 + 1]")
+  end
+
+  it "parses a field selection" do
+    parse("$1.somecolumn")
+    parse("(compositecol).somecolumn")
+    parse("(compositecol).*")
+    #parse("(rowfunction(a,b)).col3")
   end
 end

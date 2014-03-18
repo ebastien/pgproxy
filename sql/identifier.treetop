@@ -5,7 +5,15 @@ module Sql
     include Keywords
 
     rule identifier
-      literal_identifier / quoted_identifier
+      wildcard_identifier / literal_identifier / quoted_identifier
+    end
+
+    rule wildcard_identifier
+      '*' {
+        def name
+          :all
+        end
+      }
     end
 
     rule literal_identifier

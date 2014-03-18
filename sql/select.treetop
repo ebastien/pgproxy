@@ -111,9 +111,9 @@ module Sql
     end
 
     rule where_clause
-      where_kw required_space boolean_expression {
+      where_kw required_space scalar_expression {
         def predicate
-          boolean_expression.value
+          scalar_expression.value
         end
       }
       /
@@ -187,7 +187,7 @@ module Sql
     end
 
     rule predicate_join
-      join_type space join_kw space table_alias space on_kw space boolean_expression {
+      join_type space join_kw space table_alias space on_kw space scalar_expression {
         def table
           table_alias.table
         end

@@ -10,6 +10,10 @@ module Sql
     include Keywords
     include String
 
+    rule scalar_expression
+      gen_expression
+    end
+
     rule gen_expression
       gen_value r:( space gen_operator space gen_value )* {
         def value
@@ -18,14 +22,12 @@ module Sql
           end
         end
       }
-    end
-
-    rule scalar_expression
-      gen_expression
-    end
-
-    rule boolean_expression
-      gen_expression
+      /
+      gen_operator gen_expression {
+        def value
+          [gen_operator.name] + gen_expression.value
+        end
+      }
     end
 
     rule gen_operator
@@ -41,21 +43,51 @@ module Sql
     end
 
     rule gen_value
+      field_value space '[' space gen_expression space ']' {
+        def value
+          [:s, field_value.value, gen_expression.value]
+        end
+      }
+      /
+      field_value
+    end
+
+    rule field_value
+      terminal_value space '.' space identifier {
+        def value
+          [:f, terminal_value.value, identifier.name]
+        end
+      }
+      /
+      terminal_value
+    end
+
+    rule terminal_value
       '(' space gen_expression space ')' {
         def value
           gen_expression.value
         end
       }
       /
-      multi_string
+      literal_value
       /
-      numeric_literal
+      positional_param
       /
-      boolean_literal
-      /
-      column_qualified_name {
+      identifier {
         def value
           name
+        end
+      }
+    end
+
+    rule literal_value
+      multi_string / numeric_literal / boolean_literal
+    end
+
+    rule positional_param
+      '$' digits {
+        def value
+          [:p, digits.to_i]
         end
       }
     end
