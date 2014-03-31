@@ -147,7 +147,7 @@ module Sql
         end
       }
       /
-      table_qualified_name {
+      qualified_name {
         def table
           [ name, [name] ]
         end
@@ -167,7 +167,7 @@ module Sql
         end
       }
       /
-      table_qualified_name {
+      qualified_name {
         def tables
           [name]
         end

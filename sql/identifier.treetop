@@ -38,27 +38,17 @@ module Sql
       [^"] { def character; text_value end }
     end
 
-    rule table_qualified_name
-      database_name '.' table_name {
+    rule qualified_name
+      schema_name '.' identifier {
         def name
-          [ database_name.name, table_name.name ].join '/'
+          [ schema_name.name, identifier.name ].join '/'
         end
       }
       /
       table_name
     end
 
-    rule column_qualified_name
-      table_name '.' column_name {
-        def name
-          [ table_name.name, column_name.name ].join ':'
-        end
-      }
-      /
-      column_name
-    end
-
-    rule database_name
+    rule schema_name
       identifier
     end
 

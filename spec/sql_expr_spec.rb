@@ -6,6 +6,7 @@ describe Sql::ExpressionParser do
   def parse(q)
     r = Sql::ExpressionParser.new.parse q
     expect(r).not_to be_nil
+    puts r.value.inspect
     r
   end
 
@@ -56,14 +57,25 @@ describe Sql::ExpressionParser do
     parse("$1 + $2")
   end
 
-  it "parses a subscript expression" do
+  it "parses subscript expressions" do
     parse("table.column[42 + 1]")
+    parse("mytable.arraycolumn[4]")
+    parse("mytable.two_d_column[17][34]")
+    parse("$1[10:42]")
+    parse("(arrayfunction(a,b))[42]")
   end
 
-  it "parses a field selection" do
+  it "parses function calls" do
+    parse("sqrt(2)")
+    parse("somefunction(2,42, \"some, string\")")
+  end
+
+  it "parses field selections" do
     parse("$1.somecolumn")
     parse("(compositecol).somecolumn")
     parse("(compositecol).*")
-    #parse("(rowfunction(a,b)).col3")
+    parse("(rowfunction(a,b)).col3")
+    parse("(compositecol).somefield")
+    parse("(mytable.compositecol).somefield")
   end
 end
