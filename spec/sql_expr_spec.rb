@@ -78,4 +78,11 @@ describe Sql::ExpressionParser do
     parse("(compositecol).somefield")
     parse("(mytable.compositecol).somefield")
   end
+
+  it "parses aggregate function calls" do
+    parse("array_agg(a ORDER BY b,c)")
+    parse("array_agg(ALL a, b ORDER BY c DESC)")
+    parse("array_agg(DISTINCT a ORDER BY b ASC)")
+    parse("array_agg(*)")
+  end
 end

@@ -59,9 +59,9 @@ module Sql
     end
 
     rule function_call
-      function_name space function_params {
+      function_name space '(' space aggregate_params space ')' {
         def value
-          [function_name.name] + function_params.value
+          [function_name.name] + aggregate_params.value
         end
       }
     end
@@ -70,16 +70,46 @@ module Sql
       qualified_name / identifier
     end
 
-    rule function_params
-      '(' space ')' {
+    rule aggregate_params
+      (aggregate_specifier space)?
+      function_params space order_by_kw space expressions_list
+      (space ordering_specifier)? {
         def value
-          []
+          [:a, function_params.value, expressions_list.value]
         end
       }
       /
-      '(' space gen_expression space r:(',' space gen_expression space)* ')' {
+      function_params
+    end
+
+    rule aggregate_specifier
+      all_kw / distinct_kw
+    end
+
+    rule ordering_specifier
+      asc_kw / desc_kw
+    end
+
+    rule expressions_list
+      scalar_expression r:( space ',' space scalar_expression)* {
+        def value
+          [scalar_expression.value] + r.elements.map do |e|
+            e.scalar_expression.value
+          end
+        end
+      }
+    end
+
+    rule function_params
+      gen_expression r:( space ',' space gen_expression )* {
         def value
           [gen_expression.value] + r.elements.map { |e| e.gen_expression.value }
+        end
+      }
+      /
+      space {
+        def value
+          []
         end
       }
     end

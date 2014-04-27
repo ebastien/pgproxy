@@ -76,11 +76,9 @@ module Sql
     end
 
     rule select_list
-      scalar_expression r:( space ',' space scalar_expression)* {
+      expressions_list {
         def columns
-          [scalar_expression.value] + r.elements.map do |e|
-            e.scalar_expression.value
-          end
+          value
         end
       }
     end

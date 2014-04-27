@@ -5,11 +5,12 @@ module Sql
       left_kw / right_kw / full_kw / natural_kw / on_kw / using_kw /
       where_kw / not_kw / and_kw / or_kw / true_kw / false_kw /
       is_kw / isnull_kw / notnull_kw / in_kw / between_kw / overlaps_kw /
-      like_kw / ilike_kw / similar_kw / null_kw
+      like_kw / ilike_kw / similar_kw / null_kw / order_kw / by_kw /
+      desc_kw / asc_kw / all_kw / distinct_kw
     end
 
     rule kw_sep
-      !(!' ' .)
+      ![\p{Alpha}_]
     end
 
     rule with_kw
@@ -126,6 +127,34 @@ module Sql
 
     rule null_kw
       [nN] [uU] [lL] [lL] kw_sep
+    end
+
+    rule order_kw
+      [oO] [rR] [dD] [eE] [rR] kw_sep
+    end
+
+    rule by_kw
+      [bB] [yY] kw_sep
+    end
+
+    rule order_by_kw
+      order_kw required_space by_kw
+    end
+
+    rule desc_kw
+      [dD] [eE] [sS] [cC] kw_sep
+    end
+
+    rule asc_kw
+      [aA] [sS] [cC] kw_sep
+    end
+
+    rule all_kw
+      [aA] [lL] [lL] kw_sep
+    end
+
+    rule distinct_kw
+      [dD] [iI] [sS] [tT] [iI] [nN] [cC] [tT] kw_sep
     end
   end
 end
