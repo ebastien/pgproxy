@@ -90,4 +90,8 @@ describe Sql::ExpressionParser do
   it "parses type casts" do
     parse("CAST( a AS integer )")
   end
+
+  it "parses logical expressions" do
+    parse("a AND b OR NOT c")
+  end
 end

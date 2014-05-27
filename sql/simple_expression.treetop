@@ -15,19 +15,15 @@ module Sql
     end
 
     rule gen_expression
-      gen_value r:( space gen_operator space gen_value )* {
+      r:( gen_term space )* {
         def value
-          [gen_value.value] + r.elements.flat_map do |e|
-            [e.gen_operator.name, e.gen_value.value]
-          end
+          r.elements.map { |e| e.gen_term.value }
         end
       }
-      /
-      gen_operator gen_expression {
-        def value
-          [gen_operator.name] + gen_expression.value
-        end
-      }
+    end
+
+    rule gen_term
+      gen_operator / gen_value
     end
 
     rule gen_operator
@@ -35,8 +31,8 @@ module Sql
       / '=' / '<' / '>'
       / '~' / '!' / '@' / '#' / '%'
       / '^' / '&' / '|' / '?'
-      / and_kw / or_kw ) {
-        def name
+      / and_kw / or_kw / not_kw ) {
+        def value
           text_value.to_sym
         end
       }
