@@ -59,9 +59,28 @@ module Sql
     end
 
     rule function_call
+      type_cast
+      /
       function_name space '(' space aggregate_params space ')' {
         def value
           [function_name.name] + aggregate_params.value
+        end
+      }
+    end
+
+    rule type_cast
+      cast_kw space '(' space scalar_expression space as_kw space type_name space ')' {
+        def value
+          [type_name.name, scalar_expression.value]
+        end
+      }
+    end
+
+    rule type_name
+      bigint_kw / boolean_kw / double_kw / float_kw / int_kw / real_kw /
+      smallint_kw / string_kw / timestamp_kw / tinyint_kw / integer_kw {
+        def name
+          text_value.to_sym
         end
       }
     end

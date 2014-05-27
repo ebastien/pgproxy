@@ -6,7 +6,9 @@ module Sql
       where_kw / not_kw / and_kw / or_kw / true_kw / false_kw /
       is_kw / isnull_kw / notnull_kw / in_kw / between_kw / overlaps_kw /
       like_kw / ilike_kw / similar_kw / null_kw / order_kw / by_kw /
-      desc_kw / asc_kw / all_kw / distinct_kw
+      desc_kw / asc_kw / all_kw / distinct_kw / cast_kw /
+      bigint_kw / boolean_kw / double_kw / float_kw / int_kw / real_kw /
+      smallint_kw / string_kw / timestamp_kw / tinyint_kw / integer_kw
     end
 
     rule kw_sep
@@ -155,6 +157,54 @@ module Sql
 
     rule distinct_kw
       [dD] [iI] [sS] [tT] [iI] [nN] [cC] [tT] kw_sep
+    end
+
+    rule cast_kw
+      [cC] [aA] [sS] [tT] kw_sep
+    end
+
+    rule bigint_kw
+      [bB] [iI] [gG] [iI] [nN] [tT] kw_sep
+    end
+
+    rule boolean_kw
+      [bB] [oO] [oO] [lL] [eE] [aA] [nN] kw_sep
+    end
+
+    rule double_kw
+      [dD] [oO] [uU] [bB] [lL] [eE] kw_sep
+    end
+
+    rule real_kw
+      [rR] [eE] [aA] [lL] kw_sep
+    end
+
+    rule float_kw
+      [fF] [lL] [oO] [aA] [tT] kw_sep
+    end
+
+    rule int_kw
+      [iI] [nN] [tT] kw_sep
+    end
+
+    rule integer_kw
+      [iI] [nN] [tT] [eE] [gG] [eE] [rR] kw_sep
+    end
+
+    rule smallint_kw
+      [sS] [mM] [aA] [lL] [lL] [iI] [nN] [tT] kw_sep
+    end
+
+    rule string_kw
+      [sS] [tT] [rR] [iI] [nN] [gG] kw_sep
+    end
+
+    rule timestamp_kw
+      [tT] [iI] [mM] [eE] [sS] [tT] [aA] [mM] [pP] kw_sep
+    end
+
+    rule tinyint_kw
+      [tT] [iI] [nN] [yY] [iI] [nN] [tT] kw_sep
     end
   end
 end

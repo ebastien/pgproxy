@@ -84,5 +84,10 @@ describe Sql::ExpressionParser do
     parse("array_agg(ALL a, b ORDER BY c DESC)")
     parse("array_agg(DISTINCT a ORDER BY b ASC)")
     parse("array_agg(*)")
+    parse("string_agg(a, ',' ORDER BY a)")
+  end
+
+  it "parses type casts" do
+    parse("CAST( a AS integer )")
   end
 end
