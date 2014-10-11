@@ -1,11 +1,9 @@
+# coding: utf-8
 require "#{File.dirname(__FILE__)}/spec_helper"
 
-require 'sql/select'
-
-describe Sql::SelectParser do
-
+describe Sql::ExpressionParser do
   def parse(q)
-    r = Sql::SelectParser.new.parse q
+    r = Sql::ExpressionParser.new.parse q, root: :select_query
     puts r if r
     r
   end

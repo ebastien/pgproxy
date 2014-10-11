@@ -1,6 +1,5 @@
+# coding: utf-8
 require "#{File.dirname(__FILE__)}/spec_helper"
-
-require 'sql/simple_expression'
 
 describe Sql::StringParser do
   def parse(q)

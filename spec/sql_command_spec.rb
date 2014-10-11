@@ -1,6 +1,5 @@
+# coding: utf-8
 require "#{File.dirname(__FILE__)}/spec_helper"
-
-require 'sql/command'
 
 describe Sql::CommandParser do
   def parse(q)

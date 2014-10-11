@@ -1,33 +1,201 @@
-require 'sql/space'
-require 'sql/identifier'
-require 'sql/keywords'
-require 'sql/simple_expression'
-
 module Sql
-  grammar Select
+  grammar Expression
     include Space
     include Identifier
     include Keywords
-    include Expression
+    include Literals
+
+    # ---------- EXPRESSION ----------
+
+    rule scalar_expression
+      gen_expression
+    end
+
+    rule gen_expression
+      r:( gen_term space )* {
+        def value
+          r.elements.map { |e| e.gen_term.value }
+        end
+      }
+    end
+
+    rule gen_term
+      gen_operator / gen_value
+    end
+
+    rule gen_operator
+      ( '*' / '/' / '+' / '-'
+      / '=' / '<' / '>'
+      / '~' / '!' / '@' / '#' / '%'
+      / '^' / '&' / '|' / '?'
+      / and_kw / or_kw / not_kw ) {
+        def value
+          text_value.to_sym
+        end
+      }
+    end
+
+    rule gen_value
+      '(' select_query ')' {
+        def value
+          select_query.value
+        end
+      }
+      /
+      literal_value
+      /
+      function_call
+      /
+      field_value r:( space '[' space range_expression space ']' )+ {
+        def value
+          [:s, field_value.value] + r.elements.map do |e|
+            e.range_expression.value
+          end
+        end
+      }
+      /
+      field_value
+    end
+
+    rule function_call
+      type_cast
+      /
+      function_name space '(' space aggregate_params space ')' {
+        def value
+          [function_name.name] + aggregate_params.value
+        end
+      }
+    end
+
+    rule type_cast
+      cast_kw space '(' space scalar_expression space as_kw space type_name space ')' {
+        def value
+          [type_name.name, scalar_expression.value]
+        end
+      }
+    end
+
+    rule type_name
+      bigint_kw / boolean_kw / double_kw / float_kw / int_kw / real_kw /
+      smallint_kw / string_kw / timestamp_kw / tinyint_kw / integer_kw {
+        def name
+          text_value.to_sym
+        end
+      }
+    end
+
+    rule function_name
+      qualified_name / identifier
+    end
+
+    rule aggregate_params
+      (aggregate_specifier space)?
+      function_params space order_by_kw space expressions_list
+      (space ordering_specifier)? {
+        def value
+          [:a, function_params.value, expressions_list.value]
+        end
+      }
+      /
+      function_params
+    end
+
+    rule aggregate_specifier
+      all_kw / distinct_kw
+    end
+
+    rule ordering_specifier
+      asc_kw / desc_kw
+    end
+
+    rule expressions_list
+      scalar_expression r:( space ',' space scalar_expression)* {
+        def value
+          [scalar_expression.value] + r.elements.map do |e|
+            e.scalar_expression.value
+          end
+        end
+      }
+    end
+
+    rule function_params
+      gen_expression r:( space ',' space gen_expression )* {
+        def value
+          [gen_expression.value] + r.elements.map { |e| e.gen_expression.value }
+        end
+      }
+      /
+      space {
+        def value
+          []
+        end
+      }
+    end
+
+    rule range_expression
+      b:gen_expression space ':' space e:gen_expression {
+        def value
+          [:r, b.value, e.value]
+        end
+      }
+      /
+      gen_expression
+    end
+
+    rule field_value
+      terminal_value space '.' space identifier {
+        def value
+          [:f, terminal_value.value, identifier.name]
+        end
+      }
+      /
+      terminal_value
+    end
+
+    rule terminal_value
+      '(' space gen_expression space ')' {
+        def value
+          gen_expression.value
+        end
+      }
+      /
+      positional_param
+      /
+      identifier {
+        def value
+          name
+        end
+      }
+    end
+
+    # ---------- SELECT ----------
 
     rule select_query
       space with_section space select_section space {
         def subqueries
           Hash[ with_section.tables.map { |t| [t.first, expand_table(t)] } ]
         end
+
         def columns
           select_section.columns
         end
+        
         def tables
           cte = subqueries
           select_section.tables.flat_map { |t| expand_table(t) }
                                .flat_map { |t| cte[t] || [t] }
                                .sort.uniq
         end
+        
         def expand_table(t)
           a, b = t
           b.is_a?(Array) ? b.flat_map { |x| expand_table(x) } : [a]
         end
+
+        def value
+          [:q]
+        end
+        
         def to_s
           "#{subqueries} | #{columns} | #{tables}"
         end

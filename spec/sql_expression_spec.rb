@@ -1,10 +1,9 @@
+# coding: utf-8
 require "#{File.dirname(__FILE__)}/spec_helper"
-
-require 'sql/simple_expression'
 
 describe Sql::ExpressionParser do
   def parse(q)
-    r = Sql::ExpressionParser.new.parse q
+    r = Sql::ExpressionParser.new.parse q, root: :scalar_expression
     expect(r).not_to be_nil
     puts r.value.inspect
     r
@@ -93,5 +92,9 @@ describe Sql::ExpressionParser do
 
   it "parses logical expressions" do
     parse("a AND b OR NOT c")
+  end
+
+  it "parses a scalar subquery" do
+    parse("(SELECT max(pop) FROM cities WHERE cities.state = states.name)")
   end
 end

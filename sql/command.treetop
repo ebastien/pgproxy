@@ -1,8 +1,6 @@
-require 'sql/select'
-
 module Sql
   grammar Command
-    include Select
+    include Expression
 
     rule commands
       command r:( space ';' space command )*
