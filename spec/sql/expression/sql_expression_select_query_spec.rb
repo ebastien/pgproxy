@@ -1,5 +1,5 @@
 # coding: utf-8
-require "#{File.dirname(__FILE__)}/spec_helper"
+require "#{File.dirname(__FILE__)}/../../spec_helper"
 
 describe Sql::ExpressionParser do
   def parse(q)
@@ -35,7 +35,7 @@ describe Sql::ExpressionParser do
   it "parses select with subquery" do
     t = parse("select a from t1, (select b,c from d.t) t2")
     t.should_not be_nil
-    t.tables.should eq(["d/t","t1"])
+    t.tables.should eq(["d.t","t1"])
   end
 
   it "reject select with subquery without alias" do
@@ -106,5 +106,11 @@ describe Sql::ExpressionParser do
     t = parse("with q as (select a,b from t1 natural join t2) select c from q natural join t2")
     t.should_not be_nil
     t.tables.should eq(["t1","t2"])
+  end
+
+  it "parses select with scalar subquery" do
+    t = parse("SELECT name, (SELECT max(pop) FROM cities WHERE cities.state = states.name) FROM states")
+    t.should_not be_nil
+    t.tables.should eq(["cities","states"])
   end
 end

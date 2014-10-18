@@ -1,5 +1,5 @@
 # coding: utf-8
-require "#{File.dirname(__FILE__)}/spec_helper"
+require "#{File.dirname(__FILE__)}/../../spec_helper"
 
 describe Sql::ExpressionParser do
   def parse(q)
@@ -95,6 +95,7 @@ describe Sql::ExpressionParser do
   end
 
   it "parses a scalar subquery" do
-    parse("(SELECT max(pop) FROM cities WHERE cities.state = states.name)")
+    e = parse("(SELECT max(pop) FROM cities WHERE cities.state = states.name)")
+    e.value.should eq(["SELECT max(pop) FROM cities WHERE cities.state = states.name"])
   end
 end

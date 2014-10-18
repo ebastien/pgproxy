@@ -39,7 +39,7 @@ module Sql
     rule qualified_name
       schema_name '.' identifier {
         def name
-          [ schema_name.name, identifier.name ].join '/'
+          [ schema_name.name, identifier.name ].join '.'
         end
       }
       /

@@ -16,6 +16,9 @@ module Sql
         def value
           r.elements.map { |e| e.gen_term.value }
         end
+        def tables
+          r.elements.flat_map { |e| e.gen_term.tables }
+        end
       }
     end
 
@@ -32,17 +35,27 @@ module Sql
         def value
           text_value.to_sym
         end
+        def tables
+          []
+        end
       }
     end
 
     rule gen_value
       '(' select_query ')' {
         def value
-          select_query.value
+          select_query.text_value
+        end
+        def tables
+          select_query.tables
         end
       }
       /
-      literal_value
+      literal_value {
+        def tables
+          []
+        end
+      }
       /
       function_call
       /
@@ -51,6 +64,9 @@ module Sql
           [:s, field_value.value] + r.elements.map do |e|
             e.range_expression.value
           end
+        end
+        def tables
+          field_value.tables + r.elements.flat_map { |e| e.range_expression.tables }
         end
       }
       /
@@ -64,6 +80,9 @@ module Sql
         def value
           [function_name.name] + aggregate_params.value
         end
+        def tables
+          aggregate_params.tables
+        end
       }
     end
 
@@ -71,6 +90,9 @@ module Sql
       cast_kw space '(' space scalar_expression space as_kw space type_name space ')' {
         def value
           [type_name.name, scalar_expression.value]
+        end
+        def tables
+          scalar_expression.tables
         end
       }
     end
@@ -95,6 +117,9 @@ module Sql
         def value
           [:a, function_params.value, expressions_list.value]
         end
+        def tables
+          function_params.tables + expressions_list.tables
+        end
       }
       /
       function_params
@@ -115,6 +140,11 @@ module Sql
             e.scalar_expression.value
           end
         end
+        def tables
+          scalar_expression.tables + r.elements.flat_map do |e|
+            e.scalar_expression.tables
+          end
+        end
       }
     end
 
@@ -123,10 +153,16 @@ module Sql
         def value
           [gen_expression.value] + r.elements.map { |e| e.gen_expression.value }
         end
+        def tables
+          gen_expression.tables + r.elements.flat_map { |e| e.gen_expression.tables }
+        end
       }
       /
       space {
         def value
+          []
+        end
+        def tables
           []
         end
       }
@@ -136,6 +172,9 @@ module Sql
       b:gen_expression space ':' space e:gen_expression {
         def value
           [:r, b.value, e.value]
+        end
+        def tables
+          b.tables + e.tables
         end
       }
       /
@@ -147,6 +186,9 @@ module Sql
         def value
           [:f, terminal_value.value, identifier.name]
         end
+        def tables
+          terminal_value.tables
+        end
       }
       /
       terminal_value
@@ -157,6 +199,9 @@ module Sql
         def value
           gen_expression.value
         end
+        def tables
+          gen_expression.tables
+        end
       }
       /
       positional_param
@@ -165,6 +210,9 @@ module Sql
         def value
           name
         end
+        def tables
+          []
+        end
       }
     end
 
@@ -172,16 +220,12 @@ module Sql
 
     rule select_query
       space with_section space select_section space {
-        def subqueries
+        def common_tables
           Hash[ with_section.tables.map { |t| [t.first, expand_table(t)] } ]
-        end
-
-        def columns
-          select_section.columns
         end
         
         def tables
-          cte = subqueries
+          cte = common_tables
           select_section.tables.flat_map { |t| expand_table(t) }
                                .flat_map { |t| cte[t] || [t] }
                                .sort.uniq
@@ -192,12 +236,8 @@ module Sql
           b.is_a?(Array) ? b.flat_map { |x| expand_table(x) } : [a]
         end
 
-        def value
-          [:q]
-        end
-        
         def to_s
-          "#{subqueries} | #{columns} | #{tables}"
+          "SELECT FROM #{tables.join ', '}"
         end
       }
     end
@@ -233,20 +273,9 @@ module Sql
     end
 
     rule select_section
-      select_kw required_space select_list space table_expression {
-        def columns
-          select_list.columns
-        end
+      select_kw required_space expressions_list space table_expression {
         def tables
-          table_expression.tables
-        end
-      }
-    end
-
-    rule select_list
-      expressions_list {
-        def columns
-          value
+          expressions_list.tables + table_expression.tables
         end
       }
     end
