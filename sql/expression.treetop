@@ -12,14 +12,7 @@ module Sql
     end
 
     rule gen_expression
-      r:( gen_term space )* {
-        def value
-          r.elements.map { |e| e.gen_term.value }
-        end
-        def tables
-          r.elements.flat_map { |e| e.gen_term.tables }
-        end
-      }
+      r:( gen_term space )* <Node::GenExpression>
     end
 
     rule gen_term
@@ -31,98 +24,61 @@ module Sql
       / '=' / '<' / '>'
       / '~' / '!' / '@' / '#' / '%'
       / '^' / '&' / '|' / '?'
-      / and_kw / or_kw / not_kw ) {
-        def value
-          text_value.to_sym
-        end
-        def tables
-          []
-        end
-      }
+      / and_kw / or_kw / not_kw ) <Node::GenOperator>
     end
 
     rule gen_value
-      '(' select_query ')' {
-        def value
-          select_query.text_value
-        end
-        def tables
-          select_query.tables
-        end
-      }
+      literal_value <Node::GenValue::Literal>
       /
-      literal_value {
-        def tables
-          []
-        end
-      }
+      function_call <Node::GenValue::Function>
       /
-      function_call
+      field_selection r:( space '['
+        space range_expression space
+      ']' )+ <Node::GenValue::Subscript>
       /
-      field_value r:( space '[' space range_expression space ']' )+ {
-        def value
-          [:s, field_value.value] + r.elements.map do |e|
-            e.range_expression.value
-          end
-        end
-        def tables
-          field_value.tables + r.elements.flat_map { |e| e.range_expression.tables }
-        end
-      }
-      /
-      field_value
+      field_selection <Node::GenValue::Field>
     end
 
     rule function_call
       type_cast
       /
-      function_name space '(' space aggregate_params space ')' {
-        def value
-          [function_name.name] + aggregate_params.value
-        end
-        def tables
-          aggregate_params.tables
-        end
-      }
+      function_name space '('
+        space function_params space
+      ')' <Node::FunctionCall>
     end
 
     rule type_cast
-      cast_kw space '(' space scalar_expression space as_kw space type_name space ')' {
-        def value
-          [type_name.name, scalar_expression.value]
-        end
-        def tables
-          scalar_expression.tables
-        end
-      }
+      cast_kw space '('
+        space scalar_expression space as_kw space type_name space
+      ')' <Node::TypeCast>
     end
 
     rule type_name
-      bigint_kw / boolean_kw / double_kw / float_kw / int_kw / real_kw /
-      smallint_kw / string_kw / timestamp_kw / tinyint_kw / integer_kw {
-        def name
-          text_value.to_sym
-        end
-      }
+      bigint_kw / boolean_kw / double_kw / float_kw /
+      int_kw / real_kw / smallint_kw / string_kw /
+      timestamp_kw / tinyint_kw / integer_kw <Node::TypeName>
     end
 
     rule function_name
       qualified_name / identifier
     end
 
-    rule aggregate_params
-      (aggregate_specifier space)?
-      function_params space order_by_kw space expressions_list
-      (space ordering_specifier)? {
-        def value
-          [:a, function_params.value, expressions_list.value]
-        end
-        def tables
-          function_params.tables + expressions_list.tables
-        end
-      }
+    rule function_params
+      aggregate_expression
       /
-      function_params
+      expressions_list
+      /
+      void_expression
+    end
+
+    rule void_expression
+      space <Node::VoidExpression>
+    end
+
+    rule aggregate_expression
+      (aggregate_specifier space)?
+      expressions_list space order_by_clause
+      (space ordering_specifier)? <Node::AggregateExpression>
     end
 
     rule aggregate_specifier
@@ -133,240 +89,97 @@ module Sql
       asc_kw / desc_kw
     end
 
-    rule expressions_list
-      scalar_expression r:( space ',' space scalar_expression)* {
-        def value
-          [scalar_expression.value] + r.elements.map do |e|
-            e.scalar_expression.value
-          end
-        end
-        def tables
-          scalar_expression.tables + r.elements.flat_map do |e|
-            e.scalar_expression.tables
-          end
-        end
-      }
+    rule order_by_clause
+      order_by_kw space expressions_list <Node::OrderByClause>
     end
 
-    rule function_params
-      gen_expression r:( space ',' space gen_expression )* {
-        def value
-          [gen_expression.value] + r.elements.map { |e| e.gen_expression.value }
-        end
-        def tables
-          gen_expression.tables + r.elements.flat_map { |e| e.gen_expression.tables }
-        end
-      }
-      /
-      space {
-        def value
-          []
-        end
-        def tables
-          []
-        end
-      }
+    rule expressions_list
+      gen_expression r:( space ',' space gen_expression)* <Node::ExpressionsList>
     end
 
     rule range_expression
-      b:gen_expression space ':' space e:gen_expression {
-        def value
-          [:r, b.value, e.value]
-        end
-        def tables
-          b.tables + e.tables
-        end
-      }
+      b:scalar_expression space ':' space e:scalar_expression <Node::RangeExpression>
       /
-      gen_expression
+      scalar_expression
     end
 
-    rule field_value
-      terminal_value space '.' space identifier {
-        def value
-          [:f, terminal_value.value, identifier.name]
-        end
-        def tables
-          terminal_value.tables
-        end
-      }
+    rule field_selection
+      row_value space '.' space identifier <Node::FieldSelection>
       /
-      terminal_value
+      row_value
     end
 
-    rule terminal_value
-      '(' space gen_expression space ')' {
-        def value
-          gen_expression.value
-        end
-        def tables
-          gen_expression.tables
-        end
-      }
+    rule row_value
+      '(' select_query ')' <Node::RowValue::Query>
       /
-      positional_param
+      '(' space gen_expression space ')' <Node::RowValue::Expression>
       /
-      identifier {
-        def value
-          name
-        end
-        def tables
-          []
-        end
-      }
+      positional_param <Node::RowValue::Positional>
+      /
+      identifier <Node::RowValue::Identifier>
     end
 
     # ---------- SELECT ----------
 
     rule select_query
-      space with_section space select_section space {
-        def common_tables
-          Hash[ with_section.tables.map { |t| [t.first, expand_table(t)] } ]
-        end
-        
-        def tables
-          cte = common_tables
-          select_section.tables.flat_map { |t| expand_table(t) }
-                               .flat_map { |t| cte[t] || [t] }
-                               .sort.uniq
-        end
-        
-        def expand_table(t)
-          a, b = t
-          b.is_a?(Array) ? b.flat_map { |x| expand_table(x) } : [a]
-        end
-
-        def to_s
-          "SELECT FROM #{tables.join ', '}"
-        end
-      }
+      space with_section space select_section space <Node::SelectQuery>
     end
 
     rule with_section
-      with_kw required_space with_queries {
-        def tables
-          with_queries.tables
-        end
-      }
-      /
-      space {
-        def tables
-          []
-        end
-      }
+      (with_kw required_space with_queries / space) <Node::WithSection>
     end
 
     rule with_queries
-      with_query r:( space ',' space with_query )* {
-        def tables
-          [with_query.table] + r.elements.map { |e| e.with_query.table }
-        end
-      }
+      with_query r:( space ',' space with_query )* <Node::WithQueries>
     end
 
     rule with_query
-      identifier required_space as_kw required_space '(' space select_query space ')' {
-        def table
-          [ identifier.name, select_query.tables ]
-        end
-      }
+      identifier required_space as_kw required_space '('
+        space select_query space
+      ')' <Node::WithQuery>
     end
 
     rule select_section
-      select_kw required_space expressions_list space table_expression {
-        def tables
-          expressions_list.tables + table_expression.tables
-        end
-      }
+      select_kw required_space expressions_list space table_expression <Node::SelectSection>
     end
 
     rule table_expression
-      from_clause space where_clause space group_clause {
-        def tables
-          from_clause.tables
-        end
-        def filter
-          where_clause.predicate
-        end
-      }
+      from_clause space where_clause space group_clause <Node::TableExpression>
     end
 
     rule from_clause
-      from_kw required_space table_references {
-        def tables
-          table_references.tables
-        end
-      }
-      /
-      space {
-        def tables
-          []
-        end
-      }
+      (from_kw required_space table_references / space) <Node::FromClause>
     end
 
     rule where_clause
-      where_kw required_space scalar_expression {
-        def predicate
-          scalar_expression.value
-        end
-      }
-      /
-      space { def predicate; nil end }
+      where_kw required_space scalar_expression / space
     end
 
     rule group_clause
+      # TODO: Not implemented
       space
     end
 
     rule table_references
-      table_joins r:( space ',' space table_joins )* {
-        def tables
-          table_joins.tables + r.elements.flat_map { |e| e.table_joins.tables }
-        end
-      }
+      table_joins r:( space ',' space table_joins )* <Node::TableReferences>
     end
 
     rule table_joins
-      table_alias r:( space joined_table )* {
-        def tables
-          [table_alias.table] + r.elements.map { |e| e.joined_table.table }
-        end
-      }
+      table_reference r:( space joined_table )* <Node::TableJoins>
     end
 
-    rule table_alias
-      table_spec space (as_kw space)? table_name space column_list? {
-        def table
-          [ table_name.name, table_spec.tables ]
-        end
-      }
+    rule table_reference
+      (table_spec space (as_kw space)? table_name space column_list?
       /
-      qualified_name {
-        def table
-          [ name, [name] ]
-        end
-      }
+      qualified_name) <Node::TableReference>
     end
 
     rule table_spec
-      '(' space select_query space ')' {
-        def tables
-          select_query.tables
-        end
-      }
+      '(' space select_query space ')' <Node::TableSpec::Query>
       /
-      '(' space table_joins space ')' {
-        def tables
-          table_joins.tables
-        end
-      }
+      '(' space table_joins space ')' <Node::TableSpec::Joins>
       /
-      qualified_name {
-        def tables
-          [name]
-        end
-      }
+      qualified_name <Node::TableSpec::Table>
     end
 
     rule joined_table
@@ -374,27 +187,15 @@ module Sql
     end
 
     rule natural_join
-      natural_kw space join_type space join_kw space table_alias {
-        def table
-          table_alias.table
-        end
-      }
+      natural_kw space join_type space join_kw space table_reference <Node::Join>
     end
 
     rule predicate_join
-      join_type space join_kw space table_alias space on_kw space scalar_expression {
-        def table
-          table_alias.table
-        end
-      }
+      join_type space join_kw space table_reference space on_kw space scalar_expression <Node::Join>
     end
 
     rule columns_join
-      join_type space join_kw space table_alias space using_kw space column_list {
-        def table
-          table_alias.table
-        end
-      }
+      join_type space join_kw space table_reference space using_kw space column_list <Node::Join>
     end
 
     rule join_type

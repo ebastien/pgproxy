@@ -4,6 +4,10 @@ require 'treetop'
 
 $:.unshift "#{File.dirname(__FILE__)}/../"
 
+require 'sql/node/expression'
+
+require 'control/sql/node/expression'
+
 require 'sql/comment'
 require 'sql/space'
 require 'sql/keywords'
