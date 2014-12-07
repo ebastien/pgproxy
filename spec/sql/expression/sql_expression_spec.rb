@@ -76,6 +76,7 @@ describe Sql::ExpressionParser do
     parse("(rowfunction(a,b)).col3")
     parse("(compositecol).somefield")
     parse("(mytable.compositecol).somefield")
+    parse("(select a,b from t).a")
   end
 
   it "parses aggregate function calls" do

@@ -15,7 +15,7 @@ describe Sql::ExpressionParser do
   end
 
   it "parses select section with subquery" do
-    t = parse("select a, (select max(b) from t2) from t1")
+    t = parse("select a, 2 + (select max(b) from t2) from t1")
     t.should_not be_nil
     t.tables.should eq(["t2", ["t1", ["t1"]]])
   end
