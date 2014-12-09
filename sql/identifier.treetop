@@ -7,41 +7,25 @@ module Sql
     end
 
     rule wildcard_identifier
-      '*' {
-        def name
-          :all
-        end
-      }
+      '*' <Node::WildcardIdentifier>
     end
 
     rule literal_identifier
-      !keyword [\p{Alpha}_] [\p{Alnum}_$]* {
-        def name
-          text_value
-        end
-      }
+      !keyword [\p{Alpha}_] [\p{Alnum}_$]*  <Node::LiteralIdentifier>
     end
 
     rule quoted_identifier
-      '"' c:( identifier_char )* '"' {
-        def name
-          c.elements.map(&:character).join
-        end
-      }
+      '"' c:( identifier_char )* '"' <Node::QuotedIdentifier>
     end
 
     rule identifier_char
-      '""' { def character; '"' end }
+      '""' <Node::IdentifierChar::Quote>
       /
-      [^"] { def character; text_value end }
+      [^"] <Node::IdentifierChar::Text>
     end
 
     rule qualified_name
-      schema_name '.' identifier {
-        def name
-          [ schema_name.name, identifier.name ].join '.'
-        end
-      }
+      schema_name '.' identifier <Node::QualifiedName>
       /
       table_name
     end

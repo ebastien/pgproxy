@@ -10,47 +10,31 @@ module Sql
     end
 
     rule positional_param
-      '$' digits {
-        def value
-          [:p, digits.value]
-        end
-      }
+      '$' digits <Node::PositionalParam>
     end
 
     rule numeric_literal
-      decimal_literal numeric_exponent {
-        def value
-          decimal_literal.value * (10 ** numeric_exponent.value)
-        end
-      }
+      decimal_literal exponent_literal <Node::NumericLiteral>
       /
       decimal_literal
     end
 
     rule decimal_literal
-      ( digits ( '.' digits? )? / '.' digits ) {
-        def value
-          text_value.to_f
-        end
-      }
+      ( digits ( '.' digits? )? / '.' digits ) <Node::DecimalLiteral>
     end
 
-    rule numeric_exponent
-      'e' s:( '+' / '-' )? digits {
-        def value
-          digits.value * ( s.text_value == '-' ? -1 : 1 )
-        end
-      }
+    rule exponent_literal
+      'e' s:( '+' / '-' )? digits <Node::ExponentLiteral>
     end
 
     rule digits
-      [0-9]+ { def value; text_value.to_i end }
+      [0-9]+ <Node::Digits>
     end
 
     rule boolean_literal
-      true_kw { def value; true end }
+      true_kw <Node::Boolean::True>
       /
-      false_kw { def value; false end }
+      false_kw <Node::Boolean::False>
     end
   end
 end
