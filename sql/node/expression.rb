@@ -6,9 +6,48 @@ module Sql
       end
     end
 
-    module GenOperator
+    module KeywordOperator
       def value
         text_value.to_sym
+      end
+    end
+
+    module OperatorChar
+      def value
+        c.text_value
+      end
+    end
+
+    module SingleCharOperator
+      def value
+        op_char.value.to_sym
+      end
+    end
+
+    module SignEndingOperator
+      def value
+        ( unless b.empty?
+            b.r.elements.map { |e| e.basic_op_char.value } + [b.basic_op_char.value]
+          else
+            []
+          end + [special_op_char.value] + \
+          unless o.empty?
+            o.r.elements.map { |e| e.op_char.value } + [b.op_char.value]
+          else
+            []
+          end + [sign_op_char.value]
+        ).join.to_sym
+      end
+    end
+
+    module NonsignEndingOperator
+      def value
+        ( unless o.empty?
+            o.r.elements.map { |e| e.op_char.value } + [o.op_char.value]
+          else
+            []
+          end + [nonsign_op_char.value]
+        ).join.to_sym
       end
     end
 
@@ -72,6 +111,12 @@ module Sql
       end
     end
 
+    module AllColumns
+      def value
+        [:all]
+      end
+    end
+
     module RangeExpression
       def value
         [:r, b.value, e.value]
@@ -80,7 +125,13 @@ module Sql
 
     module FieldSelection
       def value
-        [:f, row_value.value, identifier.name]
+        [:f, row_value.value, field_identifier.name]
+      end
+    end
+
+    module AllFields
+      def name
+        :all
       end
     end
 

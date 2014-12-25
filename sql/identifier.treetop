@@ -3,11 +3,7 @@ module Sql
     include Keywords
 
     rule identifier
-      wildcard_identifier / literal_identifier / quoted_identifier
-    end
-
-    rule wildcard_identifier
-      '*' <Node::WildcardIdentifier>
+      literal_identifier / quoted_identifier
     end
 
     rule literal_identifier

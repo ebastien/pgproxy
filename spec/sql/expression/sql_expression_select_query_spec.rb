@@ -20,6 +20,12 @@ describe Sql::ExpressionParser do
     t.tables.should eq(["t"])
   end
 
+  it "parses select all columns" do
+    t = parse("select * from t")
+    t.should_not be_nil
+    t.tables.should eq(["t"])
+  end
+
   it "parses select with two tables" do
     t = parse("select a from t1, t2")
     t.should_not be_nil

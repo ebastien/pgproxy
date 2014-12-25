@@ -1,11 +1,5 @@
 module Sql
   module Node
-    module WildcardIdentifier
-      def name
-        :all
-      end
-    end
-
     module LiteralIdentifier
       def name
         text_value

@@ -9,6 +9,11 @@ describe Sql::ExpressionParser do
     r
   end
 
+  def reject(q)
+    r = Sql::ExpressionParser.new.parse q, root: :scalar_expression
+    expect(r).to be_nil
+  end
+
   it "parses a column name" do
     e = parse("a")
     e.value.should eq(["a"])
@@ -50,6 +55,20 @@ describe Sql::ExpressionParser do
 
   it "parses arithmetic" do
     parse("-42 * (3.5 - 9 / t.b) + t.a")
+  end
+
+  it "parses operators" do
+    expect(parse("=!=").value).to eq([:"=!="])
+    expect(parse("<~&").value).to eq([:"<~&"])
+    expect(parse("</*~&*/").value).to eq([:"<"])
+    expect(parse("</*~&*/!").value).to eq([:"<!"])
+    expect(parse("<--~&").value).to eq([:"<"])
+    expect(parse("<?-").value).to eq([:"<?-"])
+    expect(parse("/").value).to eq([:"/"])
+    expect(parse("!").value).to eq([:"!"])
+    expect(parse("/>").value).to eq([:"/>"])
+    expect(parse("+").value).to eq([:"+"])
+    reject("*-")
   end
 
   it "parses positional parameters" do

@@ -5,7 +5,7 @@ module Sql
     end
 
     rule line_comment
-      '--' [^\n]* "\n"
+      '--' [^\n]* "\n"?
     end
 
     rule c_comment

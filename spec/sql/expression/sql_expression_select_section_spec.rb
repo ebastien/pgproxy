@@ -14,6 +14,11 @@ describe Sql::ExpressionParser do
     t.tables.should eq([["t", ["table"]]])
   end
 
+  it "parses select section with global aggregation" do
+    t = parse("select count(*) from t")
+    t.should_not be_nil
+  end
+
   it "parses select section with subquery" do
     t = parse("select a, 2 + (select max(b) from t2) from t1")
     t.should_not be_nil

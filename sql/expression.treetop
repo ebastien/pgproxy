@@ -20,11 +20,50 @@ module Sql
     end
 
     rule gen_operator
-      ( '*' / '/' / '+' / '-'
-      / '=' / '<' / '>'
-      / '~' / '!' / '@' / '#' / '%'
-      / '^' / '&' / '|' / '?'
-      / and_kw / or_kw / not_kw ) <Node::GenOperator>
+      ( symbol_operator / keyword_operator ) <Node::GenOperator>
+    end
+
+    rule keyword_operator
+      ( and_kw / or_kw / not_kw ) <Node::KeywordOperator>
+    end
+
+    rule symbol_operator
+      single_char_operator / sign_ending_operator / nonsign_ending_operator
+    end
+
+    rule single_char_operator
+      op_char !op_char <Node::SingleCharOperator>
+    end
+
+    rule sign_ending_operator
+      b:( r:( basic_op_char !special_op_char )* basic_op_char )? special_op_char
+      o:( r:( op_char !(sign_op_char !op_char) )* op_char )? sign_op_char !op_char
+      <Node::SignEndingOperator>
+    end
+
+    rule nonsign_ending_operator
+      o:( r:( op_char !(nonsign_op_char !op_char) )* op_char )? nonsign_op_char !op_char
+      <Node::NonsignEndingOperator>
+    end
+
+    rule sign_op_char
+      c:[+\-] comment* <Node::OperatorChar>
+    end
+
+    rule basic_op_char
+      c:[+\-*/<>=] comment* <Node::OperatorChar>
+    end
+
+    rule special_op_char
+      c:[~!@#%^&|`?] comment* <Node::OperatorChar>
+    end
+
+    rule nonsign_op_char
+      c:[*/<>=~!@#%^&|`?] comment* <Node::OperatorChar>
+    end
+
+    rule op_char
+      c:[+\-*/<>=~!@#%^&|`?] comment* <Node::OperatorChar>
     end
 
     rule gen_value
@@ -76,6 +115,8 @@ module Sql
     end
 
     rule aggregate_expression
+      all_columns <Node::AllColumns>
+      /
       (aggregate_specifier space)?
       expressions_list space order_by_clause
       (space ordering_specifier)? <Node::AggregateExpression>
@@ -104,9 +145,17 @@ module Sql
     end
 
     rule field_selection
-      row_value space '.' space identifier <Node::FieldSelection>
+      row_value space '.' space field_identifier <Node::FieldSelection>
       /
       row_value
+    end
+
+    rule field_identifier
+      all_fields / identifier
+    end
+
+    rule all_fields
+      '*' <Node::AllFields>
     end
 
     rule row_value
@@ -140,7 +189,15 @@ module Sql
     end
 
     rule select_section
-      select_kw required_space expressions_list space table_expression <Node::SelectSection>
+      select_kw required_space select_list space table_expression <Node::SelectSection>
+    end
+
+    rule select_list
+      all_columns / expressions_list
+    end
+
+    rule all_columns
+      '*' <Node::AllColumns>
     end
 
     rule table_expression

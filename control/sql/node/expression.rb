@@ -65,6 +65,12 @@ module Sql
       end
     end
 
+    module AllColumns
+      def tables
+        []
+      end
+    end
+
     module RangeExpression
       def tables
         b.tables + e.tables
@@ -137,7 +143,7 @@ module Sql
 
     module SelectSection
       def tables
-        expressions_list.tables + table_expression.tables
+        select_list.tables + table_expression.tables
       end
     end
 
