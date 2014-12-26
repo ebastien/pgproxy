@@ -2,15 +2,15 @@
 require "#{File.dirname(__FILE__)}/../../spec_helper"
 
 describe Sql::ExpressionParser do
-  def parse(q)
-    r = Sql::ExpressionParser.new.parse q, root: :scalar_expression
+  def parse(q, root = :scalar_expression)
+    r = Sql::ExpressionParser.new.parse q, root: root
     expect(r).not_to be_nil
     puts r.value.inspect
     r
   end
 
-  def reject(q)
-    r = Sql::ExpressionParser.new.parse q, root: :scalar_expression
+  def reject(q, root = :scalar_expression)
+    r = Sql::ExpressionParser.new.parse q, root: root
     expect(r).to be_nil
   end
 
@@ -58,17 +58,32 @@ describe Sql::ExpressionParser do
   end
 
   it "parses operators" do
-    expect(parse("=!=").value).to eq([:"=!="])
-    expect(parse("<~&").value).to eq([:"<~&"])
-    expect(parse("</*~&*/").value).to eq([:"<"])
-    expect(parse("</*~&*/!").value).to eq([:"<!"])
-    expect(parse("<--~&").value).to eq([:"<"])
-    expect(parse("<?-").value).to eq([:"<?-"])
-    expect(parse("/").value).to eq([:"/"])
-    expect(parse("!").value).to eq([:"!"])
-    expect(parse("/>").value).to eq([:"/>"])
-    expect(parse("+").value).to eq([:"+"])
-    reject("*-")
+    r = :gen_operator
+    expect(parse("=!=", r).value).to eq(:"=!=")
+    expect(parse("<~&", r).value).to eq(:"<~&")
+    expect(parse("</*~&*/", r).value).to eq(:"<")
+    expect(parse("</*~&*/!", r).value).to eq(:"<!")
+    expect(parse("<--~&", r).value).to eq(:"<")
+    expect(parse("<?-", r).value).to eq(:"<?-")
+    expect(parse("/", r).value).to eq(:"/")
+    expect(parse("!", r).value).to eq(:"!")
+    expect(parse("/>", r).value).to eq(:"/>")
+    expect(parse("+", r).value).to eq(:"+")
+    expect(parse("<!>++", r).value).to eq(:"<!>++")
+    reject("*-", r)
+  end
+
+  it "parses diverse scalar expressions" do
+    parse("1+-3")
+    parse("+1*-3")
+    parse("+1>-3")
+    parse("+1>*3")
+    parse("+1>!-3")
+    parse("+1>-2==-3")
+    reject("1 2")
+    reject("+")
+    reject("3_2")
+    reject("*")
   end
 
   it "parses positional parameters" do

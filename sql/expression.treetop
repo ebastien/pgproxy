@@ -12,15 +12,15 @@ module Sql
     end
 
     rule gen_expression
-      r:( gen_term space )* <Node::GenExpression>
-    end
-
-    rule gen_term
-      gen_operator / gen_value
+      h:( gen_operator space )*
+      gen_value
+      r:( o:( space gen_operator )+ space gen_value )*
+      t:( space gen_operator )*
+      <Node::GenExpression>
     end
 
     rule gen_operator
-      ( symbol_operator / keyword_operator ) <Node::GenOperator>
+      symbol_operator / keyword_operator
     end
 
     rule keyword_operator
@@ -28,11 +28,11 @@ module Sql
     end
 
     rule symbol_operator
-      single_char_operator / sign_ending_operator / nonsign_ending_operator
+      sign_ending_operator / nonsign_ending_operator / single_char_operator
     end
 
     rule single_char_operator
-      op_char !op_char <Node::SingleCharOperator>
+      c:op_char <Node::SingleCharOperator>
     end
 
     rule sign_ending_operator
@@ -42,7 +42,7 @@ module Sql
     end
 
     rule nonsign_ending_operator
-      o:( r:( op_char !(nonsign_op_char !op_char) )* op_char )? nonsign_op_char !op_char
+      r:( op_char !(nonsign_op_char !op_char) )* op_char nonsign_op_char !op_char
       <Node::NonsignEndingOperator>
     end
 

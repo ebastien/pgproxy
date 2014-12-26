@@ -2,13 +2,7 @@ module Sql
   module Node
     module GenExpression
       def tables
-        r.elements.flat_map { |e| e.gen_term.tables }
-      end
-    end
-
-    module GenOperator
-      def tables
-        []
+        gen_value.tables + r.elements.flat_map { |e| e.gen_value.tables }
       end
     end
 

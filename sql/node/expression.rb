@@ -2,7 +2,12 @@ module Sql
   module Node
     module GenExpression
       def value
-        r.elements.map { |e| e.gen_term.value }
+        h.elements.map { |e| e.gen_operator.value } +
+        [gen_value.value] +
+        r.elements.flat_map do |e|
+          e.o.elements.map { |p| p.gen_operator.value } + [e.gen_value.value]
+        end +
+        t.elements.map { |e| e.gen_operator.value }
       end
     end
 
@@ -20,7 +25,7 @@ module Sql
 
     module SingleCharOperator
       def value
-        op_char.value.to_sym
+        c.value.to_sym
       end
     end
 
@@ -32,7 +37,7 @@ module Sql
             []
           end + [special_op_char.value] + \
           unless o.empty?
-            o.r.elements.map { |e| e.op_char.value } + [b.op_char.value]
+            o.r.elements.map { |e| e.op_char.value } + [o.op_char.value]
           else
             []
           end + [sign_op_char.value]
@@ -42,11 +47,8 @@ module Sql
 
     module NonsignEndingOperator
       def value
-        ( unless o.empty?
-            o.r.elements.map { |e| e.op_char.value } + [o.op_char.value]
-          else
-            []
-          end + [nonsign_op_char.value]
+        ( r.elements.map { |e| e.op_char.value } +
+          [op_char.value] + [nonsign_op_char.value]
         ).join.to_sym
       end
     end
