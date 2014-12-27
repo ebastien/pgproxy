@@ -30,4 +30,19 @@ describe Sql::ExpressionParser do
     parse("select a as x, b+c as y from t")
     parse("select a \"x\", b+c y from t")
   end
+
+  it "parses select section with distinct" do
+    parse("select distinct a,b from t")
+    parse("select distinct on (a+b,c) a,b,c from t")
+  end
+
+  it "parses select section with group by" do
+    parse("select a,b,min(c) from t group by a,b")
+    parse("select a,b,min(c) from t group by a,b having a+b>10")
+  end
+
+  it "parses select section with order by" do
+    parse("select a,b from t order by a+b,c DESC NULLS LAST")
+    parse("select a,b from t order by a+b,c ASC NULLS FIRST")
+  end
 end

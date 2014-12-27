@@ -117,9 +117,8 @@ module Sql
     rule aggregate_expression
       all_columns <Node::AllColumns>
       /
-      (aggregate_specifier space)?
-      expressions_list space order_by_clause
-      (space ordering_specifier)? <Node::AggregateExpression>
+      (aggregate_specifier space)? expressions_list space order_by_clause
+      <Node::AggregateExpression>
     end
 
     rule aggregate_specifier
@@ -127,11 +126,13 @@ module Sql
     end
 
     rule ordering_specifier
-      asc_kw / desc_kw
+      ( asc_kw / desc_kw )?
+      ( required_space nulls_kw required_space ( first_kw / last_kw ) )?
     end
 
     rule order_by_clause
-      order_by_kw space expressions_list <Node::OrderByClause>
+      ( order_by_kw space expressions_list space ordering_specifier / space )
+      <Node::OrderByClause>
     end
 
     rule expressions_list
@@ -189,8 +190,20 @@ module Sql
     end
 
     rule select_section
-      select_kw required_space select_list space table_expression
+      select_kw required_space
+      distinct_clause space
+      select_list space
+      table_expression space
+      order_by_clause
       <Node::SelectSection>
+    end
+
+    rule distinct_clause
+      aggregate_specifier (
+        required_space on_kw required_space '(' space expressions_list space ')'
+      )?
+      /
+      space
     end
 
     rule select_list
@@ -217,7 +230,7 @@ module Sql
     end
 
     rule table_expression
-      from_clause space where_clause space group_clause <Node::TableExpression>
+      from_clause space where_clause space group_by_clause <Node::TableExpression>
     end
 
     rule from_clause
@@ -228,9 +241,12 @@ module Sql
       where_kw required_space scalar_expression / space
     end
 
-    rule group_clause
-      # TODO: Not implemented
-      space
+    rule group_by_clause
+      group_by_kw required_space expressions_list space having_clause / space
+    end
+
+    rule having_clause
+      having_kw required_space scalar_expression / space
     end
 
     rule table_references

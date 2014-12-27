@@ -8,7 +8,8 @@ module Sql
       like_kw / ilike_kw / similar_kw / null_kw / order_kw / by_kw /
       desc_kw / asc_kw / all_kw / distinct_kw / cast_kw /
       bigint_kw / boolean_kw / double_kw / float_kw / int_kw / real_kw /
-      smallint_kw / string_kw / timestamp_kw / tinyint_kw / integer_kw
+      smallint_kw / string_kw / timestamp_kw / tinyint_kw / integer_kw /
+      group_kw / having_kw / nulls_kw / first_kw / last_kw
     end
 
     rule kw_sep
@@ -205,6 +206,30 @@ module Sql
 
     rule tinyint_kw
       [tT] [iI] [nN] [yY] [iI] [nN] [tT] kw_sep
+    end
+
+    rule group_kw
+      [gG] [rR] [oO] [uU] [pP] kw_sep
+    end
+
+    rule group_by_kw
+      group_kw required_space by_kw
+    end
+
+    rule having_kw
+      [hH] [aA] [vV] [iI] [nN] [gG] kw_sep
+    end
+
+    rule nulls_kw
+      [nN] [uU] [lL] [lL] [sS] kw_sep
+    end
+
+    rule first_kw
+      [fF] [iI] [rR] [sS] [tT] kw_sep
+    end
+
+    rule last_kw
+      [lL] [aA] [sS] [tT] kw_sep
     end
   end
 end

@@ -101,7 +101,7 @@ module Sql
 
     module OrderByClause
       def value
-        expressions_list.value
+        respond_to?(:expressions_list) ? expressions_list.value : nil
       end
     end
 

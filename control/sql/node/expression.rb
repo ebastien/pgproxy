@@ -47,7 +47,7 @@ module Sql
 
     module OrderByClause
       def tables
-        expressions_list.tables
+        respond_to?(:expressions_list) ? expressions_list.tables : []
       end
     end
 
