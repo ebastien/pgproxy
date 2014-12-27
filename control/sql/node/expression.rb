@@ -94,7 +94,7 @@ module Sql
     module RowValue
       module Query
         def tables
-          select_query.tables
+          query_expression.tables
         end
       end
       module Expression
@@ -109,16 +109,16 @@ module Sql
       end
     end
 
-    module SelectQuery
+    module Query
       def common_tables
         Hash[ with_section.tables.map { |t| [t.first, expand_table(t)] } ]
       end
 
       def tables
         cte = common_tables
-        select_section.tables.flat_map { |t| expand_table(t) }
-                             .flat_map { |t| cte[t] || [t] }
-                             .sort.uniq
+        query_expression.tables.flat_map { |t| expand_table(t) }
+                               .flat_map { |t| cte[t] || [t] }
+                               .sort.uniq
       end
 
       def expand_table(t)
@@ -145,11 +145,11 @@ module Sql
 
     module WithQuery
       def table
-        [ identifier.name, select_query.tables ]
+        [ identifier.name, query_expression.tables ]
       end
     end
 
-    module SelectSection
+    module SelectQuery
       def tables
         select_list.tables + table_expression.tables
       end
@@ -192,7 +192,7 @@ module Sql
     module TableSpec
       module Query
         def tables
-          select_query.tables
+          query_expression.tables
         end
       end
       module Joins

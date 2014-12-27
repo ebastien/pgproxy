@@ -160,7 +160,7 @@ module Sql
     end
 
     rule row_value
-      '(' select_query ')' <Node::RowValue::Query>
+      '(' query_expression ')' <Node::RowValue::Query>
       /
       '(' space gen_expression space ')' <Node::RowValue::Expression>
       /
@@ -171,8 +171,8 @@ module Sql
 
     # ---------- SELECT ----------
 
-    rule select_query
-      space with_section space select_section space <Node::SelectQuery>
+    rule query
+      space with_section space query_expression space <Node::Query>
     end
 
     rule with_section
@@ -185,17 +185,21 @@ module Sql
 
     rule with_query
       identifier required_space as_kw required_space '('
-        space select_query space
+        space query_expression space
       ')' <Node::WithQuery>
     end
 
-    rule select_section
+    rule query_expression
+      select_query
+    end
+
+    rule select_query
       select_kw required_space
       distinct_clause space
       select_list space
       table_expression space
       order_by_clause
-      <Node::SelectSection>
+      <Node::SelectQuery>
     end
 
     rule distinct_clause
@@ -264,7 +268,7 @@ module Sql
     end
 
     rule table_spec
-      '(' space select_query space ')' <Node::TableSpec::Query>
+      '(' space query_expression space ')' <Node::TableSpec::Query>
       /
       '(' space table_joins space ')' <Node::TableSpec::Joins>
       /

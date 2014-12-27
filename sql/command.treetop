@@ -7,7 +7,7 @@ module Sql
     end
 
     rule command
-      select_query / space
+      query / space
     end
   end
 end

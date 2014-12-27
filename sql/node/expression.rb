@@ -158,7 +158,7 @@ module Sql
     module RowValue
       module Query
         def value
-          select_query.text_value
+          query_expression.text_value
         end
       end
       module Expression
