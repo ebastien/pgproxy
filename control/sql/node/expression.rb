@@ -59,6 +59,20 @@ module Sql
       end
     end
 
+    module NamedExpressionsList
+      def tables
+        named_expression.tables + r.elements.flat_map do |e|
+          e.named_expression.tables
+        end
+      end
+    end
+
+    module NamedExpression
+      def tables
+        gen_expression.tables
+      end
+    end
+
     module AllColumns
       def tables
         []

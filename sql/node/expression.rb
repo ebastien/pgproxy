@@ -113,6 +113,24 @@ module Sql
       end
     end
 
+    module NamedExpressionsList
+      def value
+        [named_expression.value] + r.elements.map do |e|
+          e.named_expression.value
+        end
+      end
+    end
+
+    module NamedExpression
+      def value
+        if respond_to?(:column_name)
+          [column_name.name, gen_expression.value]
+        else
+          gen_expression.value
+        end
+      end
+    end
+
     module AllColumns
       def value
         [:all]

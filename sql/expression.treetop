@@ -189,11 +189,27 @@ module Sql
     end
 
     rule select_section
-      select_kw required_space select_list space table_expression <Node::SelectSection>
+      select_kw required_space select_list space table_expression
+      <Node::SelectSection>
     end
 
     rule select_list
-      all_columns / expressions_list
+      all_columns / named_expressions_list
+    end
+
+    rule named_expressions_list
+      named_expression r:( space ',' space named_expression)*
+      <Node::NamedExpressionsList>
+    end
+
+    rule named_expression
+      gen_expression ( space (as_kw space)? column_name )? <Node::NamedExpression>
+    end
+
+    rule table_reference
+      (table_spec space (as_kw space)? table_name space column_list?
+      /
+      qualified_name) <Node::TableReference>
     end
 
     rule all_columns
