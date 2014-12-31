@@ -1,0 +1,54 @@
+module Sql
+  grammar Operator
+    include Space
+    include Comment
+    include Keywords
+
+    rule gen_operator
+      symbol_operator / keyword_operator
+    end
+
+    rule keyword_operator
+      ( and_kw / or_kw / not_kw ) <Node::KeywordOperator>
+    end
+
+    rule symbol_operator
+      sign_ending_operator / nonsign_ending_operator / single_char_operator
+    end
+
+    rule single_char_operator
+      c:op_char <Node::SingleCharOperator>
+    end
+
+    rule sign_ending_operator
+      b:( r:( basic_op_char !special_op_char )* basic_op_char )? special_op_char
+      o:( r:( op_char !(sign_op_char !op_char) )* op_char )? sign_op_char !op_char
+      <Node::SignEndingOperator>
+    end
+
+    rule nonsign_ending_operator
+      r:( op_char !(nonsign_op_char !op_char) )* op_char nonsign_op_char !op_char
+      <Node::NonsignEndingOperator>
+    end
+
+    rule sign_op_char
+      c:[+\-] comment* <Node::OperatorChar>
+    end
+
+    rule basic_op_char
+      c:[+\-*/<>=] comment* <Node::OperatorChar>
+    end
+
+    rule special_op_char
+      c:[~!@#%^&|`?] comment* <Node::OperatorChar>
+    end
+
+    rule nonsign_op_char
+      c:[*/<>=~!@#%^&|`?] comment* <Node::OperatorChar>
+    end
+
+    rule op_char
+      c:[+\-*/<>=~!@#%^&|`?] comment* <Node::OperatorChar>
+    end
+  end
+end

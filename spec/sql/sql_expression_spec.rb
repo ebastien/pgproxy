@@ -2,15 +2,14 @@
 require "#{File.dirname(__FILE__)}/../spec_helper"
 
 describe Sql::ExpressionParser do
-  def parse(q, root = :scalar_expression)
-    r = Sql::ExpressionParser.new.parse q, root: root
+  def parse(q)
+    r = Sql::ExpressionParser.new.parse q
     expect(r).not_to be_nil
-    puts r.value.inspect
     r
   end
 
-  def reject(q, root = :scalar_expression)
-    r = Sql::ExpressionParser.new.parse q, root: root
+  def reject(q)
+    r = Sql::ExpressionParser.new.parse q
     expect(r).to be_nil
   end
 
@@ -55,22 +54,6 @@ describe Sql::ExpressionParser do
 
   it "parses arithmetic" do
     parse("-42 * (3.5 - 9 / t.b) + t.a")
-  end
-
-  it "parses operators" do
-    r = :gen_operator
-    expect(parse("=!=", r).value).to eq(:"=!=")
-    expect(parse("<~&", r).value).to eq(:"<~&")
-    expect(parse("</*~&*/", r).value).to eq(:"<")
-    expect(parse("</*~&*/!", r).value).to eq(:"<!")
-    expect(parse("<--~&", r).value).to eq(:"<")
-    expect(parse("<?-", r).value).to eq(:"<?-")
-    expect(parse("/", r).value).to eq(:"/")
-    expect(parse("!", r).value).to eq(:"!")
-    expect(parse("/>", r).value).to eq(:"/>")
-    expect(parse("+", r).value).to eq(:"+")
-    expect(parse("<!>++", r).value).to eq(:"<!>++")
-    reject("*-", r)
   end
 
   it "parses diverse scalar expressions" do
