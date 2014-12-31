@@ -9,7 +9,8 @@ module Sql
       desc_kw / asc_kw / all_kw / distinct_kw / cast_kw /
       bigint_kw / boolean_kw / double_kw / float_kw / int_kw / real_kw /
       smallint_kw / string_kw / timestamp_kw / tinyint_kw / integer_kw /
-      group_kw / having_kw / nulls_kw / first_kw / last_kw
+      group_kw / having_kw / nulls_kw / first_kw / last_kw / union_kw /
+      intersect_kw / except_kw
     end
 
     rule kw_sep
@@ -230,6 +231,18 @@ module Sql
 
     rule last_kw
       [lL] [aA] [sS] [tT] kw_sep
+    end
+
+    rule union_kw
+      [uU] [nN] [iI] [oO] [nN] kw_sep
+    end
+
+    rule intersect_kw
+      [iI] [nN] [tT] [eE] [rR] [sS] [eE] [cC] [tT] kw_sep
+    end
+
+    rule except_kw
+      [eE] [xX] [cC] [eE] [pP] [tT] kw_sep
     end
   end
 end

@@ -190,7 +190,18 @@ module Sql
     end
 
     rule query_expression
-      select_query
+      query_value r:( space set_operation space query_value )*
+      <Node::QueryExpression>
+    end
+
+    rule set_operation
+      ( union_kw / intersect_kw / except_kw ) ( required_space all_kw )?
+    end
+
+    rule query_value
+      '(' space query_expression space ')' <Node::QueryValue::Expression>
+      /
+      select_query <Node::QueryValue::Select>
     end
 
     rule select_query

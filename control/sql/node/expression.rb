@@ -149,6 +149,22 @@ module Sql
       end
     end
 
+    module QueryExpression
+      def tables
+        query_value.tables + r.elements.flat_map { |e| e.query_value.tables }
+      end
+    end
+
+    module QueryValue
+      module Expression
+        def tables
+          query_expression.tables
+        end
+      end
+      module Select
+      end
+    end
+
     module SelectQuery
       def tables
         select_list.tables + table_expression.tables

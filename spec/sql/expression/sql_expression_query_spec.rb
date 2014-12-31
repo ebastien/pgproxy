@@ -120,9 +120,12 @@ describe Sql::ExpressionParser do
     t.tables.should eq(["cities","states"])
   end
 
-  it "parses select with union" do
-    pending("not implemented")
-    t = parse("select a,b from t1 union all select b,c from t2")
-    t.should_not be_nil
+  it "parses combined select queries" do
+    expect(parse("select a from t1 union select b from t2")).not_to be_nil
+    expect(parse("select a from t1 union all select b from t2")).not_to be_nil
+    expect(parse("select a from t1 union select b from t2 union select c from t3")).not_to be_nil
+    expect(parse("select a from t1 union (select b from t2 union select c from t3)")).not_to be_nil
+    expect(parse("select a from t1 intersect select b from t2")).not_to be_nil
+    expect(parse("select a from t1 except select b from t2")).not_to be_nil
   end
 end
