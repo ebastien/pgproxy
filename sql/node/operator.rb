@@ -41,5 +41,11 @@ module Sql
         ).join.to_sym
       end
     end
+
+    module AmbiguousOperator
+      def value
+        ( r.elements.map { |e| e.op_char.value } + [op_char.value] ).join.to_sym
+      end
+    end
   end
 end

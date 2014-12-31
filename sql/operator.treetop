@@ -13,7 +13,13 @@ module Sql
     end
 
     rule symbol_operator
-      sign_ending_operator / nonsign_ending_operator / single_char_operator
+      sign_ending_operator
+      /
+      nonsign_ending_operator
+      /
+      ambiguous_operator
+      /
+      single_char_operator
     end
 
     rule single_char_operator
@@ -29,6 +35,11 @@ module Sql
     rule nonsign_ending_operator
       r:( op_char !(nonsign_op_char !op_char) )* op_char nonsign_op_char !op_char
       <Node::NonsignEndingOperator>
+    end
+
+    rule ambiguous_operator
+      r:( op_char !(sign_op_char !op_char) )* op_char
+      <Node::AmbiguousOperator>
     end
 
     rule sign_op_char

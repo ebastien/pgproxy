@@ -69,6 +69,11 @@ describe Sql::ExpressionParser do
     reject("*")
   end
 
+  it "parses expression with ambiguous operators" do
+    expect(parse("1>=-3").value).to eq([1.0, :">=", :-, 3.0])
+    expect(parse("1>!-3").value).to eq([1.0, :">!-", 3.0])
+  end
+
   it "parses positional parameters" do
     parse("$1 + $2")
   end

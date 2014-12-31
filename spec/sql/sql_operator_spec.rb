@@ -25,6 +25,7 @@ describe Sql::OperatorParser do
     expect(parse("/>").value).to eq(:"/>")
     expect(parse("+").value).to eq(:"+")
     expect(parse("<!>++").value).to eq(:"<!>++")
-    reject("*-")
+    expect(parse("<!>+=").value).to eq(:"<!>+=")
+    reject(">=-")
   end
 end
