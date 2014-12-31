@@ -1,6 +1,6 @@
 module Sql
   grammar Command
-    include Expression
+    include Query
 
     rule commands
       command r:( space ';' space command )*

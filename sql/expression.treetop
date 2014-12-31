@@ -5,8 +5,6 @@ module Sql
     include Keywords
     include Literals
 
-    # ---------- EXPRESSION ----------
-
     rule scalar_expression
       gen_expression
     end
@@ -167,26 +165,6 @@ module Sql
       positional_param <Node::RowValue::Positional>
       /
       identifier <Node::RowValue::Identifier>
-    end
-
-    # ---------- SELECT ----------
-
-    rule query
-      space with_section space query_expression space <Node::Query>
-    end
-
-    rule with_section
-      (with_kw required_space with_queries / space) <Node::WithSection>
-    end
-
-    rule with_queries
-      with_query r:( space ',' space with_query )* <Node::WithQueries>
-    end
-
-    rule with_query
-      identifier required_space as_kw required_space '('
-        space query_expression space
-      ')' <Node::WithQuery>
     end
 
     rule query_expression

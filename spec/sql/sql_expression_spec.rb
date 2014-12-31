@@ -1,5 +1,5 @@
 # coding: utf-8
-require "#{File.dirname(__FILE__)}/../../spec_helper"
+require "#{File.dirname(__FILE__)}/../spec_helper"
 
 describe Sql::ExpressionParser do
   def parse(q, root = :scalar_expression)
