@@ -14,18 +14,18 @@ describe Sql::OperatorParser do
   end
 
   it "parses operators" do
-    expect(parse("=!=").value).to eq(:"=!=")
-    expect(parse("<~&").value).to eq(:"<~&")
-    expect(parse("</*~&*/").value).to eq(:"<")
-    expect(parse("</*~&*/!").value).to eq(:"<!")
-    expect(parse("<--~&").value).to eq(:"<")
-    expect(parse("<?-").value).to eq(:"<?-")
-    expect(parse("/").value).to eq(:"/")
-    expect(parse("!").value).to eq(:"!")
-    expect(parse("/>").value).to eq(:"/>")
-    expect(parse("+").value).to eq(:"+")
-    expect(parse("<!>++").value).to eq(:"<!>++")
-    expect(parse("<!>+=").value).to eq(:"<!>+=")
+    expect(parse("=!=").operator).to eq(:"=!=")
+    expect(parse("<~&").operator).to eq(:"<~&")
+    expect(parse("</*~&*/").operator).to eq(:"<")
+    expect(parse("</*~&*/!").operator).to eq(:"<!")
+    expect(parse("<--~&").operator).to eq(:"<")
+    expect(parse("<?-").operator).to eq(:"<?-")
+    expect(parse("/").operator).to eq(:"/")
+    expect(parse("!").operator).to eq(:"!")
+    expect(parse("/>").operator).to eq(:"/>")
+    expect(parse("+").operator).to eq(:"+")
+    expect(parse("<!>++").operator).to eq(:"<!>++")
+    expect(parse("<!>+=").operator).to eq(:"<!>+=")
     reject(">=-")
   end
 end

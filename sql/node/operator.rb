@@ -1,50 +1,50 @@
 module Sql
   module Node
     module KeywordOperator
-      def value
+      def operator
         text_value.to_sym
       end
     end
 
     module OperatorChar
-      def value
+      def char
         c.text_value
       end
     end
 
     module SingleCharOperator
-      def value
-        c.value.to_sym
+      def operator
+        c.char.to_sym
       end
     end
 
     module SignEndingOperator
-      def value
+      def operator
         ( unless b.empty?
-            b.r.elements.map { |e| e.basic_op_char.value } + [b.basic_op_char.value]
+            b.r.elements.map { |e| e.basic_op_char.char } + [b.basic_op_char.char]
           else
             []
-          end + [special_op_char.value] + \
+          end + [special_op_char.char] + \
           unless o.empty?
-            o.r.elements.map { |e| e.op_char.value } + [o.op_char.value]
+            o.r.elements.map { |e| e.op_char.char } + [o.op_char.char]
           else
             []
-          end + [sign_op_char.value]
+          end + [sign_op_char.char]
         ).join.to_sym
       end
     end
 
     module NonsignEndingOperator
-      def value
-        ( r.elements.map { |e| e.op_char.value } +
-          [op_char.value] + [nonsign_op_char.value]
+      def operator
+        ( r.elements.map { |e| e.op_char.char } +
+          [op_char.char] + [nonsign_op_char.char]
         ).join.to_sym
       end
     end
 
     module AmbiguousOperator
-      def value
-        ( r.elements.map { |e| e.op_char.value } + [op_char.value] ).join.to_sym
+      def operator
+        ( r.elements.map { |e| e.op_char.char } + [op_char.char] ).join.to_sym
       end
     end
   end

@@ -2,12 +2,12 @@ module Sql
   module Node
     module GenExpression
       def value
-        h.elements.map { |e| e.gen_operator.value } +
+        h.elements.map { |e| e.gen_operator.operator } +
         [gen_value.value] +
         r.elements.flat_map do |e|
-          e.o.elements.map { |p| p.gen_operator.value } + [e.gen_value.value]
+          e.o.elements.map { |p| p.gen_operator.operator } + [e.gen_value.value]
         end +
-        t.elements.map { |e| e.gen_operator.value }
+        t.elements.map { |e| e.gen_operator.operator }
       end
     end
 
