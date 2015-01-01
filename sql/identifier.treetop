@@ -37,5 +37,9 @@ module Sql
     rule column_name
       identifier
     end
+
+    rule all_fields
+      '*' <Node::AllFields>
+    end
   end
 end

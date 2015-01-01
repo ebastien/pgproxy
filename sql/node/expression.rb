@@ -39,12 +39,6 @@ module Sql
       end
     end
 
-    module TypeName
-      def name
-        text_value.to_sym
-      end
-    end
-
     module VoidExpression
       def value
         []
@@ -104,12 +98,6 @@ module Sql
     module FieldSelection
       def value
         [:f, row_value.value, field_identifier.name]
-      end
-    end
-
-    module AllFields
-      def name
-        :all
       end
     end
 

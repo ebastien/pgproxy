@@ -44,12 +44,6 @@ module Sql
       ')' <Node::TypeCast>
     end
 
-    rule type_name
-      bigint_kw / boolean_kw / double_kw / float_kw /
-      int_kw / real_kw / smallint_kw / string_kw /
-      timestamp_kw / tinyint_kw / integer_kw <Node::TypeName>
-    end
-
     rule function_name
       qualified_name / identifier
     end
@@ -105,10 +99,6 @@ module Sql
 
     rule field_identifier
       all_fields / identifier
-    end
-
-    rule all_fields
-      '*' <Node::AllFields>
     end
 
     rule row_value

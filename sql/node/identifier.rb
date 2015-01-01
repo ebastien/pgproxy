@@ -8,18 +8,18 @@ module Sql
 
     module QuotedIdentifier
       def name
-        c.elements.map(&:character).join
+        c.elements.map(&:char).join
       end
     end
 
     module IdentifierChar
       module Quote
-        def character
+        def char
           '"'
         end
       end
       module Text
-        def character
+        def char
           text_value
         end
       end
@@ -28,6 +28,12 @@ module Sql
     module QualifiedName
       def name
         [ schema_name.name, identifier.name ].join '.'
+      end
+    end
+
+    module AllFields
+      def name
+        :all
       end
     end
   end

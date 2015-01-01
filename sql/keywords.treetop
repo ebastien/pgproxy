@@ -13,6 +13,13 @@ module Sql
       intersect_kw / except_kw
     end
 
+    rule type_name
+      bigint_kw / boolean_kw / double_kw / float_kw /
+      int_kw / real_kw / smallint_kw / string_kw /
+      timestamp_kw / tinyint_kw / integer_kw
+      <Node::TypeName>
+    end
+
     rule kw_sep
       ![\p{Alpha}_]
     end
